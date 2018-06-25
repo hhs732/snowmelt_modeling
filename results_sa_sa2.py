@@ -115,9 +115,11 @@ for index in hruidx:
 
 hru_num = np.size(hruidxID)
 years = ['2006','2007']
-out_names = ['lj1110','lj1120','lj1130','lj1210','lj1220','lj1230','lj1310','lj1320','lj1330','lj2110','lj2120','lj2130','lj2210',
-              'lj2220','lj2230','lj2310', 'lj2320', 'lj2330', 'mj1110', 'mj1120', 'mj1130', 'mj1210', 'mj1220', 'mj1230', 'mj1310',
-              'mj1320','mj2230','mj2310','mj2320','mj2330','sj1110','sj1120','sj1130','sj1210']
+out_names = ['lj1110',
+#             'lj1120','lj1130','lj1210','lj1220','lj1230','lj1310','lj1320','lj1330','lj2110','lj2120','lj2130','lj2210','lj2220','lj2230','lj2310','lj2320','lj2330', 
+#             'mj1110','mj1120','mj1130','mj1210','mj1220','mj1230','mj1310','mj1320','mj1330','mj2110','mj2120','mj2130','mj2210','mj2220','mj2230','mj2310','mj2320','mj2330',
+#             'sj1110','sj1120','sj1130','sj1210',
+             'sj1220']
 
 paramModel = (np.size(out_names))*(hru_num)
 hru_names =[]
@@ -127,43 +129,50 @@ hru_names1 = np.reshape(hru_names,(paramModel,1))
 hru_names_df = pd.DataFrame (hru_names1)
 #%% reading output_swe files
 av_ncfiles = ["SA2/sa_sa2_lj1110_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj1120_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj1130_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj1210_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj1220_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj1230_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj1310_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj1320_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj1330_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj2110_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj2120_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj2130_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj2210_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj2220_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj2230_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj2310_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj2320_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_lj2330_2006-2007_senatorVariableDecayRate_1.nc",
-              
-              "SA2/sa_sa2_mj1110_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_mj1120_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_mj1130_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_mj1210_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_mj1220_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_mj1230_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_mj1310_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_mj1320_2006-2007_senatorVariableDecayRate_1.nc",
-              
-              "SA2/sa_sa2_mj2230_2006-2007_senatorVariableDecayRate_1.nc",
-              
-              "SA2/sa_sa2_mj2310_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_mj2320_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2/sa_sa2_mj2330_2006-2007_senatorVariableDecayRate_1.nc",
-              
-              "SA2\sa_sa2_sj1110_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2\sa_sa2_sj1120_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2\sa_sa2_sj1130_2006-2007_senatorVariableDecayRate_1.nc",
-              "SA2\sa_sa2_sj1210_2006-2007_senatorVariableDecayRate_1.nc"] 
+#              "SA2/sa_sa2_lj1120_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj1130_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj1210_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj1220_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj1230_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj1310_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj1320_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj1330_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj2110_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj2120_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj2130_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj2210_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj2220_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj2230_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj2310_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj2320_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_lj2330_2006-2007_senatorVariableDecayRate_1.nc",
+#              
+#              "SA2/sa_sa2_mj1110_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj1120_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj1130_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj1210_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj1220_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj1230_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj1310_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj1320_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj1330_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj2110_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj2120_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj2130_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj2210_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj2220_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj2230_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj2310_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj2320_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_mj2330_2006-2007_senatorVariableDecayRate_1.nc",
+#              
+#              "SA2/sa_sa2_sj1110_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_sj1120_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_sj1130_2006-2007_senatorVariableDecayRate_1.nc",
+#              "SA2/sa_sa2_sj1210_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2/sa_sa2_sj1220_2006-2007_senatorVariableDecayRate_1.nc"
+#              "SA2/sa_sa2_sj1230_2006-2007_senatorVariableDecayRate_1.nc",
+              ] 
 av_all = []
 for ncfiles in av_ncfiles:
     av_all.append(Dataset(ncfiles))
@@ -206,59 +215,57 @@ av_swe_df = pd.DataFrame(np.array(av_swe_df).T, columns =  hru_names_df)
 nsnow = []
 for dfs in av_all:
     nsnow.append(pd.DataFrame(dfs['nSnow'][:][4776:4800]))
-#    nsnow.append(pd.DataFrame(dfs['nSnow'][:][4896:4920]))
-#    nsnow.append(pd.DataFrame(dfs['nSnow'][:][5112:5136]))
-#
+    nsnow.append(pd.DataFrame(dfs['nSnow'][:][4896:4920]))
+    nsnow.append(pd.DataFrame(dfs['nSnow'][:][5112:5136]))
+
 nlayer = []
 for dfs in av_all:
     nlayer.append(pd.DataFrame(dfs['nLayers'][:][4776:4800]))
-#    nlayer.append(pd.DataFrame(dfs['nLayers'][:][4896:4920]))
-#    nlayer.append(pd.DataFrame(dfs['nLayers'][:][5112:5136]))
-#
+    nlayer.append(pd.DataFrame(dfs['nLayers'][:][4896:4920]))
+    nlayer.append(pd.DataFrame(dfs['nLayers'][:][5112:5136]))
+
 sumlayer1 = []
 sumlayer2 = []
 for dfs in av_all:
     sumlayer1.append(pd.DataFrame(sum(dfs['nLayers'][:][0:4776])))
-#    sumlayer1.append(pd.DataFrame(sum(dfs['nLayers'][:][0:4896])))
-#    sumlayer1.append(pd.DataFrame(sum(dfs['nLayers'][:][0:5112])))
+    sumlayer1.append(pd.DataFrame(sum(dfs['nLayers'][:][0:4896])))
+    sumlayer1.append(pd.DataFrame(sum(dfs['nLayers'][:][0:5112])))
     sumlayer2.append(pd.DataFrame(sum(dfs['nLayers'][:][0:4800])))
-#    sumlayer2.append(pd.DataFrame(sum(dfs['nLayers'][:][0:4920])))
-#    sumlayer2.append(pd.DataFrame(sum(dfs['nLayers'][:][0:5136])))      
+    sumlayer2.append(pd.DataFrame(sum(dfs['nLayers'][:][0:4920])))
+    sumlayer2.append(pd.DataFrame(sum(dfs['nLayers'][:][0:5136])))      
 
 nlayerTemp = []
 for dfs in av_all:
     nlayerTemp.append(pd.DataFrame(dfs['mLayerTemp'][:][:]))
+#%%finding all layers temperature
+nlayertemp0418 = []
+nlayertemp0423 = []
+nlayertemp0502 = []
+nf = 0
+while nf < (3*np.size(av_ncfiles)):
+    for hru in range (hru_num):
+        nlayertemp0418.append(nlayerTemp[nf/3][hru][sumlayer1[nf][0][hru]:sumlayer2[nf][0][hru]])
+        nlayertemp0423.append(nlayerTemp[nf/3][hru][sumlayer1[nf+1][0][hru]:sumlayer2[nf+1][0][hru]])
+        nlayertemp0502.append(nlayerTemp[nf/3][hru][sumlayer1[nf+2][0][hru]:sumlayer2[nf+2][0][hru]])
+    nf = nf+3
+#%% finding snow layer temperature
+nlayertemp0418_rsh = np.reshape(nlayertemp0418,(np.size(av_ncfiles),hru_num))
+nlayertemp0423_rsh = np.reshape(nlayertemp0423,(np.size(av_ncfiles),hru_num))
+nlayertemp0502_rsh = np.reshape(nlayertemp0502,(np.size(av_ncfiles),hru_num))
+#nltcheck = nlayertemp0418_rsh[1][242]
 #%%
-nlayerTempcheck = nlayerTemp[0]
-#%%
-nlayertemp418 = []
+nsnowlayertemp0418 = []
+nsnowlayertemp0423 = []
+nsnowlayertemp0502 = []
 for nf in range (np.size(av_ncfiles)):
     for hru in range (hru_num):
-        nlayertemp418.append(nlayerTemp[nf][hru][sumlayer1[nf][0][hru]:sumlayer2[nf][0][hru]])
-#%% finding snow layer temperature
-#st = 0
-#snowlayertemp = []
-#temp_file = nlayerTemp[0]
-#tnl = nlayer[0]
-#tnsl = nsnow[0]
-#for hru in range (hru_num):
-#    for tm in range (np.size(nsnow[0][0])):
-#        snowlayertemp.append(temp_file[hru][st:st+tnsl[hru][tm]])
-#st = 0
-#snowlayertemp = []
-#for nf in range (np.size(av_ncfiles)):
-#    temp_file = nlayerTemp[nf]
-#    tnl = nlayer[nf]
-#    tnsl = nsnow[nf]
-#    for hru in range (hru_num):
-#        for tm in range (np.size(nsnow[0][0])):    
-#            snowlayertemp.append(temp_file[hru][st:st+tnsl[hru][tm]])
-#            st = st+tnl[hru][tm]
-#for nf in range (np.size(av_ncfiles)):
-#    for hru in range (hru_num):
-#        for tm in range (np.size(nsnow[0][0])):    
-#            snowlayertemp.append(nlayerTemp[nf][hru][st:st+nsnow[nf][hru][tm]])
-#            st = st+nlayer[nf][hru][tm]
+        st = 0
+        for tm in range (np.size(nsnow[0][0])):
+            nsnowlayertemp0418.append(nlayertemp0418_rsh[nf][hru][st:st+nsnow[nf][hru][tm]])
+            nsnowlayertemp0423.append(nlayertemp0423_rsh[nf][hru][st:st+nsnow[nf][hru][tm]])
+            nsnowlayertemp0502.append(nlayertemp0502_rsh[nf][hru][st:st+nsnow[nf][hru][tm]])
+            st = st+nlayer[nf][hru][tm]
+
 #%%
 #snowlayertemp_df = pd.DataFrame(np.reshape(snowlayertemp, ((np.size(hru_names1)),np.size(nsnow[0][0]))).T, columns=hru_names_df)
 #%% output time step
