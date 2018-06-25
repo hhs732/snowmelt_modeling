@@ -117,7 +117,7 @@ hru_num = np.size(hruidxID)
 years = ['2006','2007']
 out_names = ['lj1110','lj1120','lj1130','lj1210','lj1220','lj1230','lj1310','lj1320','lj1330','lj2110','lj2120','lj2130','lj2210',
               'lj2220','lj2230','lj2310', 'lj2320', 'lj2330', 'mj1110', 'mj1120', 'mj1130', 'mj1210', 'mj1220', 'mj1230', 'mj1310',
-              'mj2230','mj2310','mj2320','mj2330','sj1110','sj1120','sj1130','sj1210']
+              'mj1320','mj2230','mj2310','mj2320','mj2330','sj1110','sj1120','sj1130','sj1210']
 
 paramModel = (np.size(out_names))*(hru_num)
 hru_names =[]
@@ -152,6 +152,7 @@ av_ncfiles = ["SA2/sa_sa2_lj1110_2006-2007_senatorVariableDecayRate_1.nc",
               "SA2/sa_sa2_mj1220_2006-2007_senatorVariableDecayRate_1.nc",
               "SA2/sa_sa2_mj1230_2006-2007_senatorVariableDecayRate_1.nc",
               "SA2/sa_sa2_mj1310_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2/sa_sa2_mj1320_2006-2007_senatorVariableDecayRate_1.nc",
               
               "SA2/sa_sa2_mj2230_2006-2007_senatorVariableDecayRate_1.nc",
               
@@ -189,22 +190,60 @@ for numfil in range (len(av_swe)):
         av_swe_df.append(av_swe[numfil][hrus])
 av_swe_df = pd.DataFrame(np.array(av_swe_df).T, columns =  hru_names_df)
 #%%
-for varname in av_all[10].variables.keys():
-    var = av_all[10].variables[varname]
-    print (varname, var.dtype, var.dimensions, var.shape)
+#for varname in av_all[10].variables.keys():
+#    var = av_all[10].variables[varname]
+#    print (varname, var.dtype, var.dimensions, var.shape)
     
+#nsnow = []
+#for dfs in av_all:
+#    nsnow.append(pd.DataFrame(dfs['nSnow'][:]))
+#    
+#nlayer = []
+#for dfs in av_all:
+#    nlayer.append(pd.DataFrame(dfs['nLayers'][:]))
+
+#'2007-04-18' 4776: 4800, '2007-04-23' 4896:4920, '2007-05-02' 5112:5136
 nsnow = []
 for dfs in av_all:
-    nsnow.append(pd.DataFrame(dfs['nSnow'][:]))
-    
+    nsnow.append(pd.DataFrame(dfs['nSnow'][:][4776:4800]))
+#    nsnow.append(pd.DataFrame(dfs['nSnow'][:][4896:4920]))
+#    nsnow.append(pd.DataFrame(dfs['nSnow'][:][5112:5136]))
+#
 nlayer = []
 for dfs in av_all:
-    nlayer.append(pd.DataFrame(dfs['nLayers'][:]))
+    nlayer.append(pd.DataFrame(dfs['nLayers'][:][4776:4800]))
+#    nlayer.append(pd.DataFrame(dfs['nLayers'][:][4896:4920]))
+#    nlayer.append(pd.DataFrame(dfs['nLayers'][:][5112:5136]))
+#
+sumlayer1 = []
+sumlayer2 = []
+for dfs in av_all:
+    sumlayer1.append(pd.DataFrame(sum(dfs['nLayers'][:][0:4776])))
+#    sumlayer1.append(pd.DataFrame(sum(dfs['nLayers'][:][0:4896])))
+#    sumlayer1.append(pd.DataFrame(sum(dfs['nLayers'][:][0:5112])))
+    sumlayer2.append(pd.DataFrame(sum(dfs['nLayers'][:][0:4800])))
+#    sumlayer2.append(pd.DataFrame(sum(dfs['nLayers'][:][0:4920])))
+#    sumlayer2.append(pd.DataFrame(sum(dfs['nLayers'][:][0:5136])))      
 
 nlayerTemp = []
 for dfs in av_all:
     nlayerTemp.append(pd.DataFrame(dfs['mLayerTemp'][:][:]))
 #%%
+nlayerTempcheck = nlayerTemp[0]
+#%%
+nlayertemp418 = []
+for nf in range (np.size(av_ncfiles)):
+    for hru in range (hru_num):
+        nlayertemp418.append(nlayerTemp[nf][hru][sumlayer1[nf][0][hru]:sumlayer2[nf][0][hru]])
+#%% finding snow layer temperature
+#st = 0
+#snowlayertemp = []
+#temp_file = nlayerTemp[0]
+#tnl = nlayer[0]
+#tnsl = nsnow[0]
+#for hru in range (hru_num):
+#    for tm in range (np.size(nsnow[0][0])):
+#        snowlayertemp.append(temp_file[hru][st:st+tnsl[hru][tm]])
 #st = 0
 #snowlayertemp = []
 #for nf in range (np.size(av_ncfiles)):
