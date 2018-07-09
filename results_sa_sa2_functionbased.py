@@ -38,7 +38,73 @@ from sklearn.metrics import mean_squared_error
 import itertools
 import csv
 from allNcFiles import av_ncfiles
-#%% output file
+#%% defining functions
+def readAllNcfilesAsDataset(allNcfiles):
+    allNcfilesDataset = []
+    for ncfiles in allNcfiles:
+        allNcfilesDataset.append(Dataset(ncfiles))
+    return allNcfilesDataset
+#hruname = hru_names_df[0]
+def readVariablefromNcfilesDatasetasDF(NcfilesDataset,variable,hruname):
+    variableNameList = []
+    for datasets in NcfilesDataset:
+        variableNameList.append(pd.DataFrame(datasets[variable][:][:]))
+    variableNameDF = pd.concat (variableNameList, axis=1)
+    variableNameDF.columns = hruname
+    counter = pd.DataFrame(np.arange(0,np.size(variableNameDF[hru_names_df[0][0]])),columns=['counter'])
+    counter.set_index(variableNameDF.index,inplace=True)
+    variableNameDF = pd.concat([counter, variableNameDF], axis=1)
+    return variableNameDF
+
+def date(allNcfilesDataset,formatDate):
+    Time = allNcfilesDataset[0].variables['time'][:] 
+    #TimeSa = np.concatenate((TimeSa2006, TimeSa2007), axis=0)
+    t_unit = allNcfilesDataset[0].variables['time'].units 
+    
+    try :
+        t_cal = allNcfilesDataset[0].variables['time'].calendar
+    
+    except AttributeError : # Attribute doesn't exist error
+        t_cal = u"gregorian" # or standard
+    #tvalueSa = num2date(TimeSa, units=t_unitSa, calendar=t_cal)
+    tvalue = num2date(Time, units=t_unit, calendar=t_cal)
+    Date = [i.strftime(formatDate) for i in tvalue] # "%Y-%m-%d %H:%M"
+    return Date
+
+def readSpecificDatafromAllHRUs(variablename,hruname,day):
+    dayData = []
+    for names in hruname:
+        dayData.append(variablename[names][day])
+    return dayData
+
+def sumBeforeSpecificDatafromAllHRUs(variablename,hruname,day):
+    sumData = []
+    for names in hruname:
+        sumData.append(sum(variablename[names][0:day]))
+    return sumData   
+
+def snowLayerAttributeforSpecificDate(layerattributefile,hruname,sumlayer,snowlayer): #like snowlayetemp, volFracosIce, ....
+    snowlayerattribute = []
+    for names in hruname:
+        snowlayerattribute.append(list(layerattributefile[names][sumlayer[names][0]:sumlayer[names][0]+snowlayer[names][0]]))
+    return snowlayerattribute
+
+def depthOfLayers(heightfile):
+    finalHeight = []
+    for lsts in heightfile:
+        sumSofar=0
+        lstscopy= lsts[:]
+        lstscopy.reverse()
+        height_ls = []
+        for values in lstscopy:
+            height=2*(abs(values)-sumSofar)
+            height_ls.append(height)
+            sumSofar+=height
+        #print ("original:", height_ls) 
+        height_ls.reverse()
+        #print ("after reverse:", height_ls)
+        finalHeight.append(height_ls)
+    return finalHeight
 
 #%% SWE observation data 
 date_swe = ['2006-11-01 11:10','2006-11-30 12:30','2007-01-01 11:10','2007-01-30 10:35','2007-03-05 14:30','2007-03-12 14:00', 
@@ -57,7 +123,15 @@ obs_swe = pd.DataFrame (swe_mm, columns=['swe_mm'])
 obs_swe.set_index(pd.DatetimeIndex(date_swe),inplace=True)
 
 max_swe_obs = max(obs_swe['swe_mm'])
-max_swe_date_obs = obs_swe[obs_swe ['swe_mm']== max_swe_obs].index.tolist()    
+max_swe_date_obs = obs_swe[obs_swe ['swe_mm']== max_swe_obs].index.tolist()  
+
+swe_obs2006 = pd.DataFrame (obs_swe['swe_mm']['2006-11-01':'2007-06-06'], columns=['swe_mm'])
+swe_obs2007 = pd.DataFrame (obs_swe['swe_mm']['2007-12-03':'2008-06-08'], columns=['swe_mm'])
+date_swe2006 = ['2006-11-01 11:10','2006-11-30 12:30','2007-01-01 11:10','2007-01-30 10:35','2007-03-05 14:30', 
+                '2007-03-12 14:00','2007-03-19 12:30','2007-03-26 12:30','2007-04-02 12:30','2007-04-18 08:35', 
+                '2007-04-23 10:30','2007-05-02 08:40','2007-05-09 08:50','2007-05-16 09:00','2007-05-23 08:30',
+                '2007-05-30 09:00','2007-06-06 08:15']
+swe_obs2006.set_index(pd.DatetimeIndex(date_swe2006),inplace=True)  
 #%% Snow depth observation data
 with open("snowDepth_2006_2008.csv") as safd1:
     reader1 = csv.reader(safd1)
@@ -115,7 +189,6 @@ hruidxID = []
 for index in hruidx:
     hruidxID.append(int(index))
     
-
 hru_num = np.size(hruidxID)
 years = ['2006','2007']
 out_names = ['lj1110',
@@ -134,56 +207,7 @@ for i in out_names:
     hru_names.append(['{}{}'.format(j, i) for j in hruidxID])
 hru_names1 = np.reshape(hru_names,(paramModel,1))
 hru_names_df = pd.DataFrame (hru_names1)
-#%% defining functions
-def readAllNcfilesAsDataset(allNcfiles):
-    allNcfilesDataset = []
-    for ncfiles in allNcfiles:
-        allNcfilesDataset.append(Dataset(ncfiles))
-    return allNcfilesDataset
-#hruname = hru_names_df[0]
-def readVariablefromNcfilesDatasetasDF(NcfilesDataset,variable,hruname):
-    variableNameList = []
-    for datasets in NcfilesDataset:
-        variableNameList.append(pd.DataFrame(datasets[variable][:][:]))
-    variableNameDF = pd.concat (variableNameList, axis=1)
-    variableNameDF.columns = hruname
-    counter = pd.DataFrame(np.arange(0,np.size(variableNameDF[hru_names_df[0][0]])),columns=['counter'])
-    counter.set_index(variableNameDF.index,inplace=True)
-    variableNameDF = pd.concat([counter, variableNameDF], axis=1)
-    return variableNameDF
 
-def date(allNcfilesDataset,formatDate):
-    Time = allNcfilesDataset[0].variables['time'][:] 
-    #TimeSa = np.concatenate((TimeSa2006, TimeSa2007), axis=0)
-    t_unit = allNcfilesDataset[0].variables['time'].units 
-    
-    try :
-        t_cal = allNcfilesDataset[0].variables['time'].calendar
-    
-    except AttributeError : # Attribute doesn't exist error
-        t_cal = u"gregorian" # or standard
-    #tvalueSa = num2date(TimeSa, units=t_unitSa, calendar=t_cal)
-    tvalue = num2date(Time, units=t_unit, calendar=t_cal)
-    Date = [i.strftime(formatDate) for i in tvalue] # "%Y-%m-%d %H:%M"
-    return Date
-
-def readSpecificDatafromAllHRUs(variablename,hruname,day):
-    dayData = []
-    for names in hruname:
-        dayData.append(variablename[names][day])
-    return dayData
-
-def sumBeforeSpecificDatafromAllHRUs(variablename,hruname,day):
-    sumData = []
-    for names in hruname:
-        sumData.append(sum(variablename[names][0:day]))
-    return sumData   
-
-def snowLayerAttributeforSpecificDate(layerattributefile,hruname,sumlayer,snowlayer): #like snowlayetemp, volFracosIce, ....
-    snowlayerattribute = []
-    for names in hruname:
-        snowlayerattribute.append(list(layerattributefile[names][sumlayer[names][0]:sumlayer[names][0]+snowlayer[names][0]]))
-    return snowlayerattribute
 #%%  reading output files
 av_all = readAllNcfilesAsDataset(av_ncfiles)
 DateSa = date(av_all,"%Y-%m-%d %H:%M")
@@ -198,9 +222,27 @@ nvolfracliq = readVariablefromNcfilesDatasetasDF(av_all,'mLayerVolFracLiq',hru_n
 nheight = readVariablefromNcfilesDatasetasDF(av_all,'mLayerHeight',hru_names_df[0])
 
 #%%
-for varname in av_all[0].variables.keys():
-    var = av_all[0].variables[varname]
-    print (varname, var.dtype, var.dimensions, var.shape)
+#for varname in av_all[0].variables.keys():
+#    var = av_all[0].variables[varname]
+#    print (varname, var.dtype, var.dimensions, var.shape)
+#%% ploting annual swe curves
+#DateSa2 = date(av_all,"%Y-%m-%d")
+#sax = np.arange(0,np.size(DateSa2))
+#sa_xticks = DateSa2
+#safig, saax = plt.subplots(1,1, figsize=(20,15))
+#plt.xticks(sax, sa_xticks[::1000], rotation=25, fontsize=20)
+#saax.xaxis.set_major_locator(ticker.AutoLocator())
+#plt.yticks(fontsize=20)
+#for hru in hru_names_df[0]:
+#    plt.plot(av_swe_df[hru])#, sbx, swe_obs2006, 'k--', linewidth=0.5)#, label='wwe', color='maroon') param_nam_list[q] color_list[q]
+#
+#plt.plot(swe_obs2006, 'ok', markersize=10)
+#
+#plt.title('rainbow_SWE', position=(0.04, 0.88), ha='left', fontsize=40)
+#plt.xlabel('Time 2005-2006', fontsize=30)
+#plt.ylabel('SWE(mm)', fontsize=30)
+##plt.show()
+#plt.savefig('SA2/swelj.png')
 #%% day of snow disappearance (based on snowdepth)-final output
 av_sd_df5000 = av_sd_df[:][5000:8737]
 
@@ -233,7 +275,6 @@ for hru in dosd_df.columns:
     dosd_residual.append((dosd_df[hru][0]-dosd_obs['2006'])/24)
 
 dosd_residual_df = pd.DataFrame(np.reshape(np.array(dosd_residual),(np.size(out_names),hru_num)).T, columns=out_names)
-
 #%%
 #plt.xticks(x, hru[::3], rotation=25)
 #for namefile in out_names:
@@ -246,33 +287,7 @@ dosd_residual_df = pd.DataFrame(np.reshape(np.array(dosd_residual),(np.size(out_
 #    #vax.yaxis.set_label_coords(0.5, -0.1) 
 #    plt.savefig('SA2/'+namefile)
 
-#%%out_names = ['AvInitial','Avas2l','Avas3m','Avtc2s','Avns3p','Avns4c']# 'Avwp2e','Avas2l','Avas3m','Avtc3t','Avtc4m','Avns3p','Avce2s','Avtc2s','Avtc3t','Avtc4m','Avns2a','Avns3p','Avns4c']
-swe_obs2006 = pd.DataFrame (obs_swe['swe_mm']['2006-11-01':'2007-06-06'], columns=['swe_mm'])
-swe_obs2007 = pd.DataFrame (obs_swe['swe_mm']['2007-12-03':'2008-06-08'], columns=['swe_mm'])
-date_swe2006 = ['2006-11-01 11:10','2006-11-30 12:30','2007-01-01 11:10','2007-01-30 10:35','2007-03-05 14:30', 
-                '2007-03-12 14:00','2007-03-19 12:30','2007-03-26 12:30','2007-04-02 12:30','2007-04-18 08:35', 
-                '2007-04-23 10:30','2007-05-02 08:40','2007-05-09 08:50','2007-05-16 09:00','2007-05-23 08:30',
-                '2007-05-30 09:00','2007-06-06 08:15']
-swe_obs2006.set_index(pd.DatetimeIndex(date_swe2006),inplace=True)
 
-#%%
-#DateSa2 = [i.strftime("%Y-%m-%d") for i in tvalueSa]
-#sax = np.arange(0,np.size(DateSa2))
-#sa_xticks = DateSa2
-#safig, saax = plt.subplots(1,1, figsize=(20,15))
-#plt.xticks(sax, sa_xticks[::1000], rotation=25, fontsize=20)
-#saax.xaxis.set_major_locator(ticker.AutoLocator())
-#plt.yticks(fontsize=20)
-#for hru in hru_names_df[0]:
-#    plt.plot(av_swe_df[hru])#, sbx, swe_obs2006, 'k--', linewidth=0.5)#, label='wwe', color='maroon') param_nam_list[q] color_list[q]
-#
-#plt.plot(swe_obs2006, 'ok', markersize=10)
-#
-#plt.title('rainbow_SWE', position=(0.04, 0.88), ha='left', fontsize=40)
-#plt.xlabel('Time 2005-2006', fontsize=30)
-#plt.ylabel('SWE(mm)', fontsize=30)
-##plt.show()
-#plt.savefig('SA2/swelj.png')
 #%%**************************************************************************************************
 # *********************** finding max corespondance swe for '2007-05-09 08:50'***********************
 #'2007-04-18' 4776: 4800, '2007-04-23' 4896:4920, '2007-05-02' 5112:5136
@@ -302,11 +317,34 @@ for counterhd in range (np.size(minSWE)):
     meltingrate.append(float(0.1*24*mdeltaSWE[counterhd]/mdeltaday[counterhd]))
 #%% **************************************************************************************************
 # ************************** calculating cold content ************************************************
+#observed cold content in each day
+#Group1: 
+heatCapacityIce = -2102 #J kg-1 K-1
+swe0130 = [0.77,0.91,0.75,0.72]; T0130 = [-1.25,-3.5,-6.5,-8.5] 
+swe0305 = [0.83,0.94,0.65,0.91,0.68,0.61,0.37]; T0305 = [-0.45,-1.45,-2.45,-3.4,-5.35,-8,-4.7] #14:30 #3734
+swe0312 = [0.81,0.91,0.85,0.76,0.69,0.61,0.38,0.22]; T0312 = [-0.8,-1.8,-2.4,-3.2,-3.8,-4.3,-4.6,-1]
+swe0319 = [0.83,0.84,0.95,0.75,0.69,0.36,0.27,0.34]; T0319 = [-0.4,-1,-1.4,-1.5,-1.5,-1.5,-0.7,0]
+swe0326 = [0.93,0.87,0.75,0.81,0.70,0.80,0.63]; T0326 = [-0.06,-0.2,-0.2,-0.2,-0.3,-0.7,-0.3]
+swe0402 = [0.65,1.07,1.03,0.85,1.13,0.32,0.82,0.22]; T0402 = [0,0,0,0,0,0,0,0]
+swe0418 = [0.84,1.19,1.18,1.17,0.47,1.04,0.89]; T0418 = [0,0,0,0,0,0,-1.2]
+
+cc0130 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0130,T0130)))]
+cc0305 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0305,T0305)))]
+cc0312 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0312,T0312)))]
+cc0319 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0319,T0319)))]
+cc0326 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0326,T0326)))]
+cc0402 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0402,T0402)))]
+cc0418 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0418,T0418)))]
+cc0423 = [0.52*-1*0.05*-2102/1000000]
+cc0502 = [0]
+#%% modeled cold content in each day
 nlayerTemp =  readVariablefromNcfilesDatasetasDF(av_all,'mLayerTemp',hru_names_df[0])
 nsnow =  readVariablefromNcfilesDatasetasDF(av_all,'nSnow',hru_names_df[0])
 nlayer = readVariablefromNcfilesDatasetasDF(av_all,'nLayers',hru_names_df[0])
 
-#%% number of snowlayer 
+#%% number of snowlayer
+nsnow0305 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],3734)).T; nsnow0305.columns = hru_names_df[0]
+ 
 nsnow0312 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],3902)).T; nsnow0312.columns = hru_names_df[0]
 nsnow0319 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4068)).T; nsnow0319.columns = hru_names_df[0]
 nsnow0326 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4236)).T; nsnow0326.columns = hru_names_df[0]
@@ -317,6 +355,8 @@ nsnow0423 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4907)
 nsnow0502 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],5121)).T; nsnow0502.columns = hru_names_df[0]
 
 # sum of all layers befor target layer
+sumlayer0305 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],3734)).T; sumlayer0305.columns = hru_names_df[0]
+
 sumlayer0312 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],3902)).T; sumlayer0312.columns = hru_names_df[0]
 sumlayer0319 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4068)).T; sumlayer0319.columns = hru_names_df[0]
 sumlayer0326 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4236)).T; sumlayer0326.columns = hru_names_df[0]
@@ -326,6 +366,7 @@ sumlayer0423 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df
 sumlayer0502 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],5121)).T; sumlayer0502.columns = hru_names_df[0]
 
 #%%snow layer temperature
+snowlayertemp0305 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0305,nsnow0305)
 ##group1
 snowlayertemp0312 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0312,nsnow0312)
 snowlayertemp0319 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0319,nsnow0319)
@@ -338,6 +379,8 @@ snowlayertemp0502 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0]
 
 #%% volumetric fraction of ice in snow layers
 #group1
+volfracIce0305 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0305,nsnow0305)
+
 volfracIce0312 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0312,nsnow0312)
 volfracIce0319 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0319,nsnow0319)
 volfracIce0326 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0326,nsnow0326)
@@ -346,9 +389,11 @@ volfracIce0402 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],s
 volfracIce0418 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0418,nsnow0418)
 volfracIce0423 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0423,nsnow0423)
 volfracIce0502 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0502,nsnow0502)
-
+#%%
 #volumetric fraction of liquid in snow layers
 #group1
+volfracLiq0305 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0305,nsnow0305)
+
 volfracLiq0312 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0312,nsnow0312)
 volfracLiq0319 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0319,nsnow0319)
 volfracLiq0326 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0326,nsnow0326)
@@ -357,9 +402,11 @@ volfracLiq0402 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],s
 volfracLiq0418 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0418,nsnow0418)
 volfracLiq0423 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0423,nsnow0423)
 volfracLiq0502 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0502,nsnow0502)
-
+#%%
 # height of each snow layer
 #group1
+height0305 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0305,nsnow0305)
+
 height0312 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0312,nsnow0312)
 height0319 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0319,nsnow0319)
 height0326 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0326,nsnow0326)
@@ -368,25 +415,73 @@ height0402 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0
 height0418 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0418,nsnow0418)
 height0423 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0423,nsnow0423)
 height0502 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0502,nsnow0502)
-#%%
-def depthOfLayers(heightfile):
-    finalHeight = []
-    sumSofar=0
-    for lsts in heightfile:
-        lsts.reverse()
-        height_ls = []
-        for values in lsts:
-            height=2*(abs(values)-sumSofar)
-            height_ls.append(height)
-            sumSofar+=height
-        finalHeight.append(height_ls)
-    return finalHeight
-    
-#%%
-height0312rt=depthOfLayers(height0312)
- 
- 
-    
+#group1
+height0305layer = depthOfLayers(height0305)
+
+height0312layer = depthOfLayers(height0312)
+height0319layer = depthOfLayers(height0319)
+height0326layer = depthOfLayers(height0326)
+height0402layer = depthOfLayers(height0402)
+#group2
+height0418layer = depthOfLayers(height0418)
+height0423layer = depthOfLayers(height0423)
+height0502layer = depthOfLayers(height0502)
+#%% cold content in each day
+
+
+def mySubtract(myList,num):
+    return list(np.subtract(myList,num))
+def myMultiply(myList,num):
+    return list(np.multiply(myList,num))
+def sum2lists (list1,list2):
+    return list(np.add(list1,list2))
+
+densityofWater = 997 #kg/m³
+densityofIce = 917 #kg/m3
+heatCapacityIce = -2102./1000000 #Mj kg-1 m3-1
+coldcontent = []
+for nlst in range (np.size(height0305layer)):
+    swe = np.array(sum2lists(myMultiply(volfracLiq0305[nlst],densityofWater),myMultiply(volfracIce0305[nlst],densityofIce)))
+    temp = np.array(mySubtract(snowlayertemp0305[nlst],273.2))
+    HCItHS = np.array(myMultiply(heatCapacityIce,height0305layer[nlst]))
+    cct = sum(list(swe*temp*HCItHS))
+    coldcontent.append(cct)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     
     
     
