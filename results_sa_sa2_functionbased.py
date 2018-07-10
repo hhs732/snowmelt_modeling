@@ -31,6 +31,7 @@ import matplotlib.pyplot as plt
 from netCDF4 import Dataset,netcdftime,num2date
 from datetime import datetime
 import pandas as pd
+from mpl_toolkits.mplot3d import Axes3D
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 from scipy import stats
@@ -39,6 +40,13 @@ import itertools
 import csv
 from allNcFiles import av_ncfiles
 #%% defining functions
+def mySubtract(myList,num):
+    return list(np.subtract(myList,num))
+def myMultiply(myList,num):
+    return list(np.multiply(myList,num))
+def sum2lists (list1,list2):
+    return list(np.add(list1,list2))
+
 def readAllNcfilesAsDataset(allNcfiles):
     allNcfilesDataset = []
     for ncfiles in allNcfiles:
@@ -51,7 +59,7 @@ def readVariablefromNcfilesDatasetasDF(NcfilesDataset,variable,hruname):
         variableNameList.append(pd.DataFrame(datasets[variable][:][:]))
     variableNameDF = pd.concat (variableNameList, axis=1)
     variableNameDF.columns = hruname
-    counter = pd.DataFrame(np.arange(0,np.size(variableNameDF[hru_names_df[0][0]])),columns=['counter'])
+    counter = pd.DataFrame(np.arange(0,np.size(variableNameDF[hruname[0]])),columns=['counter'])
     counter.set_index(variableNameDF.index,inplace=True)
     variableNameDF = pd.concat([counter, variableNameDF], axis=1)
     return variableNameDF
@@ -105,6 +113,19 @@ def depthOfLayers(heightfile):
         #print ("after reverse:", height_ls)
         finalHeight.append(height_ls)
     return finalHeight
+
+def coldContentFunc(hruname,volfracLiq,volfracIce,snowlayertemp,layerHeight):
+    densityofWater = 997 #kg/m³
+    densityofIce = 917 #kg/m3
+    heatCapacityIce = -2102./1000000 #Mj kg-1 m3-1
+    coldcontent = []
+    for nlst in range (np.size(hruname)):
+        swe = np.array(sum2lists(myMultiply(volfracLiq[nlst],densityofWater),myMultiply(volfracIce[nlst],densityofIce)))
+        temp = np.array(mySubtract(snowlayertemp[nlst],273.2))
+        HCItHS = np.array(myMultiply(heatCapacityIce,layerHeight[nlst]))
+        cct = sum(list(swe*temp*HCItHS))
+        coldcontent.append(cct)
+    return coldcontent
 
 #%% SWE observation data 
 date_swe = ['2006-11-01 11:10','2006-11-30 12:30','2007-01-01 11:10','2007-01-30 10:35','2007-03-05 14:30','2007-03-12 14:00', 
@@ -191,15 +212,26 @@ for index in hruidx:
     
 hru_num = np.size(hruidxID)
 years = ['2006','2007']
-out_names = ['lj1110',
-#              'lj1120','lj1130','lj1210','lj1220','lj1230','lj1310','lj1320','lj1330','lj2110','lj2120','lj2130','lj2210','lj2220','lj2230','lj2310','lj2320','lj2330',
-#              'mj1110','mj1120','mj1130','mj1210','mj1220','mj1230','mj1310','mj1320','mj1330','mj2110','mj2120','mj2130','mj2210','mj2220','mj2230','mj2310','mj2320','mj2330',
-#              'sj1110','sj1120','sj1130','sj1210','sj1220','sj1230','sj1310','sj1320','sj1330',
-#              #'sj2110',
-#              'sj2120','sj2130','sj2210','sj2220','sj2230','sj2310','sj2320','sj2330',
-#              'lc1111','lc1112','lc1113','lc1121','lc1122','lc1123','lc1131','lc1132','lc1133','lc1211','lc1212','lc1213','lc1221','lc1222','lc1223','lc1231','lc1232','lc1233','lc1311','lc1312','lc1313','lc1321','lc1322','lc1323','lc1331','lc1332','lc1333','lc2111','lc2112','lc2113','lc2121','lc2122','lc2123','lc2131','lc2132','lc2133','lc2211',
-#              'sc1111','sc1112','sc1113','sc1121','sc1122','sc1123','sc1131','sc1132','sc1133','sc1211','sc1212','sc1213','sc1221','sc1222','sc1223','sc1231','sc1232',
-              'sc1233']
+out_names = ["lj1110",
+             "lj1120","lj1130","lj1210","lj1220","lj1230","lj1310","lj1320","lj1330","lj2110","lj2120","lj2130","lj2210","lj2220","lj2230","lj2310","lj2320","lj2330",
+
+#             "mj1110",
+#             "mj1120","mj1130","mj1210","mj1220","mj1230","mj1310","mj1320","mj1330","mj2110","mj2120","mj2130","mj2210","mj2220","mj2230","mj2310","mj2320","mj2330",
+
+#             "sj1110",
+#             "sj1120","sj1130","sj1210","sj1220","sj1230","sj1310","sj1320","sj1330","sj2110","sj2120","sj2130","sj2210","sj2220","sj2230","sj2310","sj2320","sj2330"
+
+#             "lc1111",
+#             "lc1112","lc1113","lc1121","lc1122","lc1123","lc1131","lc1132","lc1133","lc1211","lc1212","lc1213","lc1221","lc1222","lc1223","lc1231","lc1232","lc1233","lc1311","lc1312","lc1313","lc1321","lc1322",
+#             "lc1323","lc1331","lc1332","lc1333","lc2111","lc2112","lc2113","lc2121","lc2122","lc2123","lc2131","lc2132","lc2133","lc2211","lc2212","lc2213","lc2221","lc2222","lc2223","lc2231","lc2232","lc2233",
+#             "lc2311","lc2312","lc2313","lc2321","lc2322","lc2323","lc2331","lc2332","lc2333",
+
+#             "mc1111",
+#             "mc1112","mc1113","mc1121","mc1122","mc1123","mc1131","mc1132","mc1133","mc1211","mc1212","mc1213",
+
+#             "sc1111",
+#             "sc1112","sc1113","sc1121","sc1122","sc1123","sc1131","sc1132","sc1133","sc1211","sc1212","sc1213","sc1221","sc1222","sc1223","sc1231","sc1232","sc1233","sc1311","sc1312","sc1313","sc1321","sc1322","sc1323","sc1331","sc1332","sc1333","sc2111","sc2112","sc2113","sc2121","sc2122","sc2123","sc2131","sc2132","sc2133","sc2211","sc2212","sc2213","sc2221","sc2222","sc2223","sc2231","sc2232","sc2233","sc2311","sc2312"
+             ]
 
 paramModel = (np.size(out_names))*(hru_num)
 hru_names =[]
@@ -295,7 +327,7 @@ dosd_residual_df = pd.DataFrame(np.reshape(np.array(dosd_residual),(np.size(out_
 #Group2: '2007-04-18 08:35' (4784),'2007-04-23 10:30 (4907)','2007-05-02 08:40'(5121), 
 
 maxSWE = readSpecificDatafromAllHRUs(av_swe_df,hru_names_df[0],5289)
-
+maxSWE_obs = [711]   
 #%%**************************************************************************************************
 # ********************** calculating snowmelt rate based on SWE *************************************
 minSWE = []
@@ -315,6 +347,10 @@ for counterhd in range (np.size(minSWE)):
     mdeltaday.append(float(minSWEdate[counterhd]-5289))
     mdeltaSWE.append(float(maxSWE[counterhd]-minSWE[counterhd]))
     meltingrate.append(float(0.1*24*mdeltaSWE[counterhd]/mdeltaday[counterhd]))
+    
+#'2007-05-09 08:50':5289, to '2007-06-06 08:15': 5960, 
+#swe_mm = [711, 84]
+meltingRate_obs = [0.1*24*(711-84.)/(5960-5289.)] #cm/day
 #%% **************************************************************************************************
 # ************************** calculating cold content ************************************************
 #observed cold content in each day
@@ -345,115 +381,115 @@ nlayer = readVariablefromNcfilesDatasetasDF(av_all,'nLayers',hru_names_df[0])
 #%% number of snowlayer
 nsnow0305 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],3734)).T; nsnow0305.columns = hru_names_df[0]
  
-nsnow0312 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],3902)).T; nsnow0312.columns = hru_names_df[0]
-nsnow0319 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4068)).T; nsnow0319.columns = hru_names_df[0]
-nsnow0326 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4236)).T; nsnow0326.columns = hru_names_df[0]
-nsnow0402 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4404)).T; nsnow0402.columns = hru_names_df[0]
-
-nsnow0418 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4784)).T; nsnow0418.columns = hru_names_df[0]
-nsnow0423 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4907)).T; nsnow0423.columns = hru_names_df[0]
-nsnow0502 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],5121)).T; nsnow0502.columns = hru_names_df[0]
-
-# sum of all layers befor target layer
+#nsnow0312 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],3902)).T; nsnow0312.columns = hru_names_df[0]
+#nsnow0319 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4068)).T; nsnow0319.columns = hru_names_df[0]
+#nsnow0326 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4236)).T; nsnow0326.columns = hru_names_df[0]
+#nsnow0402 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4404)).T; nsnow0402.columns = hru_names_df[0]
+#
+#nsnow0418 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4784)).T; nsnow0418.columns = hru_names_df[0]
+#nsnow0423 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],4907)).T; nsnow0423.columns = hru_names_df[0]
+#nsnow0502 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],5121)).T; nsnow0502.columns = hru_names_df[0]
+#
+## sum of all layers befor target layer
 sumlayer0305 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],3734)).T; sumlayer0305.columns = hru_names_df[0]
 
-sumlayer0312 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],3902)).T; sumlayer0312.columns = hru_names_df[0]
-sumlayer0319 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4068)).T; sumlayer0319.columns = hru_names_df[0]
-sumlayer0326 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4236)).T; sumlayer0326.columns = hru_names_df[0]
-sumlayer0402 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4404)).T; sumlayer0402.columns = hru_names_df[0]
-sumlayer0418 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4784)).T; sumlayer0418.columns = hru_names_df[0]
-sumlayer0423 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4907)).T; sumlayer0423.columns = hru_names_df[0]
-sumlayer0502 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],5121)).T; sumlayer0502.columns = hru_names_df[0]
+#sumlayer0312 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],3902)).T; sumlayer0312.columns = hru_names_df[0]
+#sumlayer0319 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4068)).T; sumlayer0319.columns = hru_names_df[0]
+#sumlayer0326 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4236)).T; sumlayer0326.columns = hru_names_df[0]
+#sumlayer0402 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4404)).T; sumlayer0402.columns = hru_names_df[0]
+#sumlayer0418 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4784)).T; sumlayer0418.columns = hru_names_df[0]
+#sumlayer0423 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],4907)).T; sumlayer0423.columns = hru_names_df[0]
+#sumlayer0502 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],5121)).T; sumlayer0502.columns = hru_names_df[0]
 
 #%%snow layer temperature
 snowlayertemp0305 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0305,nsnow0305)
 ##group1
-snowlayertemp0312 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0312,nsnow0312)
-snowlayertemp0319 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0319,nsnow0319)
-snowlayertemp0326 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0326,nsnow0326)
-snowlayertemp0402 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0402,nsnow0402)
-#group2
-snowlayertemp0418 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0418,nsnow0418)
-snowlayertemp0423 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0423,nsnow0423)
-snowlayertemp0502 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0502,nsnow0502)
+#snowlayertemp0312 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0312,nsnow0312)
+#snowlayertemp0319 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0319,nsnow0319)
+#snowlayertemp0326 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0326,nsnow0326)
+#snowlayertemp0402 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0402,nsnow0402)
+##group2
+#snowlayertemp0418 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0418,nsnow0418)
+#snowlayertemp0423 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0423,nsnow0423)
+#snowlayertemp0502 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0502,nsnow0502)
 
 #%% volumetric fraction of ice in snow layers
 #group1
 volfracIce0305 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0305,nsnow0305)
 
-volfracIce0312 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0312,nsnow0312)
-volfracIce0319 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0319,nsnow0319)
-volfracIce0326 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0326,nsnow0326)
-volfracIce0402 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0402,nsnow0402)
-#group2
-volfracIce0418 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0418,nsnow0418)
-volfracIce0423 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0423,nsnow0423)
-volfracIce0502 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0502,nsnow0502)
+#volfracIce0312 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0312,nsnow0312)
+#volfracIce0319 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0319,nsnow0319)
+#volfracIce0326 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0326,nsnow0326)
+#volfracIce0402 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0402,nsnow0402)
+##group2
+#volfracIce0418 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0418,nsnow0418)
+#volfracIce0423 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0423,nsnow0423)
+#volfracIce0502 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0502,nsnow0502)
 #%%
 #volumetric fraction of liquid in snow layers
 #group1
 volfracLiq0305 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0305,nsnow0305)
 
-volfracLiq0312 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0312,nsnow0312)
-volfracLiq0319 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0319,nsnow0319)
-volfracLiq0326 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0326,nsnow0326)
-volfracLiq0402 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0402,nsnow0402)
-#group2
-volfracLiq0418 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0418,nsnow0418)
-volfracLiq0423 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0423,nsnow0423)
-volfracLiq0502 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0502,nsnow0502)
+#volfracLiq0312 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0312,nsnow0312)
+#volfracLiq0319 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0319,nsnow0319)
+#volfracLiq0326 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0326,nsnow0326)
+#volfracLiq0402 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0402,nsnow0402)
+##group2
+#volfracLiq0418 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0418,nsnow0418)
+#volfracLiq0423 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0423,nsnow0423)
+#volfracLiq0502 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0502,nsnow0502)
 #%%
 # height of each snow layer
 #group1
 height0305 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0305,nsnow0305)
-
-height0312 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0312,nsnow0312)
-height0319 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0319,nsnow0319)
-height0326 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0326,nsnow0326)
-height0402 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0402,nsnow0402)
-#group2
-height0418 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0418,nsnow0418)
-height0423 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0423,nsnow0423)
-height0502 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0502,nsnow0502)
+#
+#height0312 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0312,nsnow0312)
+#height0319 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0319,nsnow0319)
+#height0326 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0326,nsnow0326)
+#height0402 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0402,nsnow0402)
+##group2
+#height0418 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0418,nsnow0418)
+#height0423 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0423,nsnow0423)
+#height0502 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0502,nsnow0502)
 #group1
 height0305layer = depthOfLayers(height0305)
 
-height0312layer = depthOfLayers(height0312)
-height0319layer = depthOfLayers(height0319)
-height0326layer = depthOfLayers(height0326)
-height0402layer = depthOfLayers(height0402)
-#group2
-height0418layer = depthOfLayers(height0418)
-height0423layer = depthOfLayers(height0423)
-height0502layer = depthOfLayers(height0502)
+#height0312layer = depthOfLayers(height0312)
+#height0319layer = depthOfLayers(height0319)
+#height0326layer = depthOfLayers(height0326)
+#height0402layer = depthOfLayers(height0402)
+##group2
+#height0418layer = depthOfLayers(height0418)
+#height0423layer = depthOfLayers(height0423)
+#height0502layer = depthOfLayers(height0502)
 #%% cold content in each day
+coldcontent0305 = coldContentFunc(hru_names_df[0],volfracLiq0305,volfracIce0305,snowlayertemp0305,height0305layer)
 
+#%% defining criteria
+coldcontentcrit = [abs(values) for values in mySubtract(coldcontent0305,cc0305)]
+meltingRateCrit = [abs(values) for values in mySubtract(meltingrate,meltingRate_obs)]
+maxSWEcrit = [abs(values) for values in mySubtract(maxSWE,maxSWE_obs)]
 
-def mySubtract(myList,num):
-    return list(np.subtract(myList,num))
-def myMultiply(myList,num):
-    return list(np.multiply(myList,num))
-def sum2lists (list1,list2):
-    return list(np.add(list1,list2))
+coldcontentcrit_df = pd.DataFrame(coldcontentcrit, columns=['coldContent'])
+meltingRateCrit_df = pd.DataFrame(meltingRateCrit, columns=['meltingRate'])
+maxSWECrit_df = pd.DataFrame(maxSWEcrit, columns=['maxSWE'])
+criteria_df = pd.concat([coldcontentcrit_df, meltingRateCrit_df, maxSWECrit_df], axis=1)
+criteria_df.set_index(hru_names_df[0],inplace=True)
+Apareto_model_param = pd.DataFrame(criteria_df.index[((criteria_df['maxSWE']) <= 150) & ((criteria_df['meltingRate'])<=0.25) & ((criteria_df['coldContent'])<=7.35)].tolist())
 
-densityofWater = 997 #kg/m³
-densityofIce = 917 #kg/m3
-heatCapacityIce = -2102./1000000 #Mj kg-1 m3-1
-coldcontent = []
-for nlst in range (np.size(height0305layer)):
-    swe = np.array(sum2lists(myMultiply(volfracLiq0305[nlst],densityofWater),myMultiply(volfracIce0305[nlst],densityofIce)))
-    temp = np.array(mySubtract(snowlayertemp0305[nlst],273.2))
-    HCItHS = np.array(myMultiply(heatCapacityIce,height0305layer[nlst]))
-    cct = sum(list(swe*temp*HCItHS))
-    coldcontent.append(cct)
+fig = plt.figure(figsize=(20,15))
+ax = fig.add_subplot(111, projection='3d')
 
+xs = coldcontentcrit
+ys = meltingRateCrit
+zs = maxSWEcrit
+ax.scatter(xs, ys, zs)
 
-
-
-
-
-
-
+ax.set_xlabel('cold content (Mj/m2)',fontsize=20)
+ax.set_ylabel('melting rate (cm/day)',fontsize=20)
+ax.set_zlabel('maxSWE (mm)',fontsize=20)
+plt.savefig('SA2/'+'lj')
+#plt.show()
 
 
 
