@@ -22,13 +22,15 @@ p12 = [0.6, 0.68, 0.74] #albedoMinVisible |       0.7500 |       0.5000 |       
 p13 = [0.55, 0.65, 0.7] #albedoMaxNearIR |       0.6500 |       0.5000 |       0.7500
 p14 = [0.2, 0.3, 0.4] #albedoMinNearIR  |       0.3000 |       0.1500 |       0.4500
 
-p15 = [0.001] #[0.001, 0.002] #z0Snow
+p15 = [0.002] #[0.001, 0.002] #z0Snow
 
-p16 = [1]# 1, 3, 6] #albedoRefresh |       1.0000 |       1.0000 |      10.0000
+p16 = [6]# 1, 3, 6] #albedoRefresh |       1.0000 |       1.0000 |      10.0000
 
-p17 = [2] #2, 3, 4] #mw_exp exponent for meltwater flow
+p17 = [4] #2, 3, 4] #mw_exp exponent for meltwater flow
 
-p18 = [0.4] #0.2, 0.4 , 0.6] #fixedThermalCond_snow
+p18 = [0.6] #0.2, 0.4 , 0.6] #fixedThermalCond_snow
+
+paramfile = Dataset("summa_zParamTrial_variableDecayRate_sa_sa2_s2333.nc",'w',format='NETCDF3_CLASSIC') #create new paramtrail.nc file
 
 #p21 = [0.700, 1.000, 1.500] #Mahrt87_eScale  
 #p14 = [0.040, 0.060, 0.080] #Fcapil
@@ -38,7 +40,6 @@ p18 = [0.4] #0.2, 0.4 , 0.6] #fixedThermalCond_snow
 #p20 = [5.200, 5.300, 5.400] #Louis79_cStar 
 #p15 = [105] #51, 70, 105] #constSnowDen 70.00, 100.0, 170.0    55 56 57 
 
-paramfile = Dataset("summa_zParamTrial_variableDecayRate_sa_sa2_j1110.nc",'w',format='NETCDF3_CLASSIC') #create new paramtrail.nc file
 
 def hru_ix_ID(p10, p11, p12, p13, p14):#, p15, p16, p17, p18):
     ix10 = np.arange(1,len(p10)+1)
@@ -118,8 +119,8 @@ for varname in paramfile.variables.keys():
 #print paramfile.variables['hruIndex'][:]
 paramfile.close()
 #%% 
-varcheck = Dataset ('summa_zParamTrial_variableDecayRate_sa_sa2_j1110.nc')
-print varcheck.variables['theta_res'][:]
+#varcheck = Dataset ('summa_zParamTrial_variableDecayRate_sa_sa2_s2333.nc')
+#print varcheck.variables['theta_res'][:]
 #check2 =  varcheck.variables['albedoMaxNearIR'][:]
 #I checked it in Check.py code
 #%% # local attributes file
@@ -232,7 +233,7 @@ iccheck = Dataset("summa_zInitialCond_sa2.nc")
 #for varname in iccheck.variables.keys():
 #    var = iccheck.variables[varname]
 #    print (varname, var.dtype, var.dimensions, var.shape)
-print iccheck.variables['scalarSWE'][:]
+print iccheck.variables['nSoil'][:]
 #%%
 
 

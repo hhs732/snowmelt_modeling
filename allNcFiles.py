@@ -126,7 +126,13 @@ av_ncfiles = ["SA2/sa_sa2_lj1110_2006-2007_senatorVariableDecayRate_1.nc",
               "SA2/sa_sa2_mc1222_2006-2007_senatorVariableDecayRate_1.nc",
               "SA2/sa_sa2_mc1223_2006-2007_senatorVariableDecayRate_1.nc",
               "SA2/sa_sa2_mc1231_2006-2007_senatorVariableDecayRate_1.nc",
-
+              "SA2/sa_sa2_mc1232_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2\sa_sa2_mc1233_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2\sa_sa2_mc1311_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2\sa_sa2_mc1312_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2\sa_sa2_mc1313_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2\sa_sa2_mc1321_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2\sa_sa2_mc1322_2006-2007_senatorVariableDecayRate_1.nc",
               
               "SA2/sa_sa2_sc1111_2006-2007_senatorVariableDecayRate_1.nc",
               "SA2/sa_sa2_sc1112_2006-2007_senatorVariableDecayRate_1.nc",
@@ -178,8 +184,10 @@ av_ncfiles = ["SA2/sa_sa2_lj1110_2006-2007_senatorVariableDecayRate_1.nc",
               "SA2/sa_sa2_sc2313_2006-2007_senatorVariableDecayRate_1.nc",
               "SA2/sa_sa2_sc2321_2006-2007_senatorVariableDecayRate_1.nc",
               "SA2/sa_sa2_sc2322_2006-2007_senatorVariableDecayRate_1.nc",
-
-                ]
+              "SA2/sa_sa2_sc2323_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2/sa_sa2_sc2331_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2/sa_sa2_sc2332_2006-2007_senatorVariableDecayRate_1.nc",
+              "SA2/sa_sa2_sc2333_2006-2007_senatorVariableDecayRate_1.nc"]
 
 
 #aaa = [0.5,1.5,2.5,3.25, 4]
