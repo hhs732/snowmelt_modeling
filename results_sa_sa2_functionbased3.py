@@ -37,6 +37,17 @@ def readVariablefromNcfilesDatasetasDF(NcfilesDataset,variable,hruname):
     variableNameDF = pd.concat([counter, variableNameDF], axis=1)
     return variableNameDF
 
+def readSomePartofVariableDatafromNcfilesDatasetasDF(NcfilesDataset,variable,hruname,paretoNameDF):
+    variableNameList = []
+    for datasets in NcfilesDataset:
+        variableNameList.append(pd.DataFrame(datasets[variable][:]))
+    variableDF = pd.concat (variableNameList, axis=1)
+    variableDF.columns = hruname
+    desiredDataframe = []
+    for paretos in paretoNameDF:
+        desiredDataframe.append(variableDF[paretos])
+    return desiredDataframe
+
 def date(allNcfilesDataset,formatDate):
     Time = allNcfilesDataset[0].variables['time'][:] 
     #TimeSa = np.concatenate((TimeSa2006, TimeSa2007), axis=0)
@@ -64,7 +75,7 @@ def sumBeforeSpecificDatafromAllHRUs(variablename,hruname,day):
         sumData.append(sum(variablename[names][0:day]))
     return sumData   
 
-def snowLayerAttributeforSpecificDate(layerattributefile,hruname,sumlayer,snowlayer): #like snowlayetemp, volFracosIce, ....
+def snowLayerAttributeforSpecificDate(layerattributefile,hruname,sumlayer,snowlayer): #like snowlayertemp, volFracosIce, ....
     snowlayerattribute = []
     for names in hruname:
         snowlayerattribute.append(list(layerattributefile[names][sumlayer[names][0]:sumlayer[names][0]+snowlayer[names][0]]))
@@ -87,18 +98,7 @@ def depthOfLayers(heightfile):
         finalHeight.append(height_ls)
     return finalHeight
 
-def coldContentFunc(hruname,volfracLiq,volfracIce,snowlayertemp,layerHeight):
-    densityofWater = 997 #kg/m³
-    densityofIce = 917 #kg/m3
-    heatCapacityIce = -2102./1000000 #Mj kg-1 m3-1
-    coldcontent = []
-    for nlst in range (np.size(hruname)):
-        swe = np.array(sum2lists(myMultiply(volfracLiq[nlst],densityofWater),myMultiply(volfracIce[nlst],densityofIce)))
-        temp = np.array(mySubtract(snowlayertemp[nlst],273.2))
-        HCItHS = np.array(myMultiply(heatCapacityIce,layerHeight[nlst]))
-        cct = sum(list(swe*temp*HCItHS))
-        coldcontent.append(cct)
-    return coldcontent
+
 
 def SWEandSWEDateforSpecificDate(hruname,hour,swe_df,dosd):
     SWE = []
@@ -207,24 +207,24 @@ for index in hruidx:
     
 hru_num = np.size(hruidxID)
 years = ['2006','2007']
-out_names = ["lj1110","lj1120","lj1130","lj1210","lj1220","lj1230","lj1310","lj1320","lj1330","lj2110","lj2120","lj2130","lj2210","lj2220","lj2230","lj2310","lj2320","lj2330",
+out_names = [#"lj1110","lj1120","lj1130","lj1210","lj1220","lj1230","lj1310","lj1320","lj1330","lj2110","lj2120","lj2130","lj2210","lj2220","lj2230","lj2310","lj2320","lj2330",
 
-             "mj1110","mj1120","mj1130","mj1210","mj1220","mj1230","mj1310","mj1320","mj1330","mj2110","mj2120","mj2130","mj2210","mj2220","mj2230","mj2310","mj2320","mj2330",
+             #"mj1110","mj1120","mj1130","mj1210","mj1220","mj1230","mj1310","mj1320","mj1330","mj2110","mj2120","mj2130","mj2210","mj2220","mj2230","mj2310","mj2320","mj2330",
 
              #"s2110",
-             "sj1110", "sj1120","sj1130","sj1210","sj1220","sj1230","sj1310","sj1320","sj1330","sj2120","sj2130","sj2210","sj2220","sj2230","sj2310","sj2320","sj2330",
+             #"sj1110", "sj1120","sj1130","sj1210","sj1220","sj1230","sj1310","sj1320","sj1330","sj2120","sj2130","sj2210","sj2220","sj2230","sj2310","sj2320","sj2330",
 
-             "lc1111","lc1112","lc1113","lc1121","lc1122","lc1123","lc1131","lc1132","lc1133","lc1211","lc1212","lc1213","lc1221","lc1222","lc1223","lc1231","lc1232","lc1233",
-             "lc1311","lc1312","lc1313","lc1321","lc1322","lc1323","lc1331","lc1332","lc1333","lc2111","lc2112","lc2113","lc2121","lc2122","lc2123","lc2131","lc2132","lc2133",
-             "lc2211","lc2212","lc2213","lc2221","lc2222","lc2223","lc2231","lc2232","lc2233","lc2311","lc2312","lc2313","lc2321","lc2322","lc2323","lc2331","lc2332","lc2333",
+             #"lc1111","lc1112","lc1113","lc1121","lc1122","lc1123","lc1131","lc1132","lc1133","lc1211","lc1212","lc1213","lc1221","lc1222","lc1223","lc1231","lc1232","lc1233",
+             #"lc1311","lc1312","lc1313","lc1321","lc1322","lc1323","lc1331","lc1332","lc1333","lc2111","lc2112","lc2113","lc2121","lc2122","lc2123","lc2131","lc2132","lc2133",
+             #"lc2211","lc2212","lc2213","lc2221","lc2222","lc2223","lc2231","lc2232","lc2233","lc2311","lc2312","lc2313","lc2321","lc2322","lc2323","lc2331","lc2332","lc2333",
 
              "mc1111","mc1112","mc1113","mc1121","mc1122","mc1123","mc1131","mc1132","mc1133","mc1211","mc1212","mc1213","mc1221","mc1222","mc1223","mc1231","mc1232","mc1233",
-             "mc1311","mc1312","mc1313","mc1321","mc1322","mc1323","mc1331","mc1332","mc1333","mc2111","mc2112","mc2113","mc2121","mc2122","mc2123","mc2131","mc2132","mc2133",
-             "mc2211","mc2212","mc2213","mc2221","mc2222","mc2223","mc2231","mc2232","mc2233","mc2322","mc2323","mc2331",
-
-             "sc1111","sc1112","sc1113","sc1121","sc1122","sc1123","sc1131","sc1132","sc1133","sc1211","sc1212","sc1213","sc1221","sc1222","sc1223","sc1231","sc1232","sc1233",
-             "sc1311","sc1312","sc1313","sc1321","sc1322","sc1323","sc1331","sc1332","sc1333","sc2111","sc2112","sc2113","sc2121","sc2122","sc2123","sc2131","sc2132","sc2133",
-             "sc2211","sc2212","sc2213","sc2221","sc2222","sc2223","sc2231","sc2232","sc2233","sc2311","sc2312","sc2313","sc2321","sc2322","sc2323","sc2331","sc2332","sc2333"
+#             "mc1311","mc1312","mc1313","mc1321","mc1322","mc1323","mc1331","mc1332","mc1333","mc2111","mc2112","mc2113","mc2121","mc2122","mc2123","mc2131","mc2132","mc2133",
+#             "mc2211","mc2212","mc2213","mc2221","mc2222","mc2223","mc2231","mc2232","mc2233","mc2322","mc2323","mc2331",
+#
+#             "sc1111","sc1112","sc1113","sc1121","sc1122","sc1123","sc1131","sc1132","sc1133","sc1211","sc1212","sc1213","sc1221","sc1222","sc1223","sc1231","sc1232","sc1233",
+#             "sc1311","sc1312","sc1313","sc1321","sc1322","sc1323","sc1331","sc1332","sc1333","sc2111","sc2112","sc2113","sc2121","sc2122","sc2123","sc2131","sc2132","sc2133",
+#             "sc2211","sc2212","sc2213","sc2221","sc2222","sc2223","sc2231","sc2232","sc2233","sc2311","sc2312","sc2313","sc2321","sc2322","sc2323","sc2331","sc2332","sc2333"
              ]
 
 paramModel = (np.size(out_names))*(hru_num)
@@ -243,14 +243,6 @@ av_sd_df.set_index(pd.DatetimeIndex(DateSa),inplace=True)
 av_swe_df =  readVariablefromNcfilesDatasetasDF(av_all,'scalarSWE',hru_names_df[0])
 av_swe_df.set_index(pd.DatetimeIndex(DateSa),inplace=True)
 
-#nvolfracIce = readVariablefromNcfilesDatasetasDF(av_all,'mLayerVolFracIce',hru_names_df[0])
-#nvolfracliq = readVariablefromNcfilesDatasetasDF(av_all,'mLayerVolFracLiq',hru_names_df[0])
-#nheight = readVariablefromNcfilesDatasetasDF(av_all,'mLayerHeight',hru_names_df[0])
-
-#%%
-##for varname in av_all[0].variables.keys():
-##    var = av_all[0].variables[varname]
-##    print (varname, var.dtype, var.dimensions, var.shape)
 #%% ploting annual swe curves
 #DateSa2 = date(av_all,"%Y-%m-%d")
 #sax = np.arange(0,np.size(DateSa2))
@@ -301,17 +293,7 @@ for hru in dosd_df.columns:
     dosd_residual.append((dosd_df[hru][0]-dosd_obs['2006'])/24)
 
 dosd_residual_df = pd.DataFrame(np.reshape(np.array(dosd_residual),(np.size(out_names),hru_num)).T, columns=out_names)
-#%%
-##plt.xticks(x, hru[::3], rotation=25)
-##for namefile in out_names:
-##    x = list(np.arange(1,244))
-##    fig = plt.figure(figsize=(20,15))
-##    plt.bar(x,zerosnowdate_residual_df[namefile])
-##    plt.title(namefile, fontsize=42)
-##    plt.xlabel('hrus',fontsize=30)
-##    plt.ylabel('residual dosd (day)', fontsize=30)
-##    #vax.yaxis.set_label_coords(0.5, -0.1) 
-##    plt.savefig('SA2/'+namefile)
+
 #%%**************************************************************************************************
 # *********************** finding max corespondance swe for '2007-05-09 08:50'***********************
 #'2007-04-18' 4776: 4800, '2007-04-23' 4896:4920, '2007-05-02' 5112:5136
@@ -338,24 +320,6 @@ meltingrate3 = meltingRateBetween2days(sweM3,sweM4,SWE3date,SWE4date)
 meltingrateAvg_mod = []
 for countermr in range (np.size(meltingrate1)):
     meltingrateAvg_mod.append((meltingrate1[countermr]+meltingrate2[countermr]+meltingrate3[countermr])/3)
-#%%        
-#minSWE = []
-#minSWEdate = []
-#for names in hru_names_df[0]:
-#    if av_swe_df[names][5960]>0:
-#        minSWE.append(av_swe_df[names][5960])
-#        minSWEdate.append(5960)
-#    else: 
-#        minSWE.append(float(av_swe_df[names][dosd_df[names]-1]))
-#        minSWEdate.append(float(dosd_df[names]-1))
-#
-#mdeltaday = []
-#mdeltaSWE = []
-#meltingrate = [] #cm/day
-#for counterhd in range (np.size(minSWE)):
-#    mdeltaday.append(float(minSWEdate[counterhd]-5289))
-#    mdeltaSWE.append(float(maxSWE[counterhd]-minSWE[counterhd]))
-#    meltingrate.append(float(0.1*24*mdeltaSWE[counterhd]/mdeltaday[counterhd]))
 #%%
 sweMR = [711, 550, 309, 84]
 mrDate = ['2007-05-09 08:50 5289','2007-05-16 09:00 5457','2007-05-30 09:00 5793','2007-06-06 08:15 5960']  
@@ -366,79 +330,20 @@ meltingrateAvg_obs = (meltingrate1_obs+meltingrate2_obs+meltingrate3_obs)/3.
 #'2007-05-09 08:50':5289, to '2007-06-06 08:15': 5960, 
 #swe_mm = [711, 84]
 meltingRate_obs = [0.1*24*(711-84.)/(5960-5289.)] #cm/day
-#%% **************************************************************************************************
-## ************************** calculating cold content ************************************************
-##observed cold content in each day
-##Group1: 
-#heatCapacityIce = -2102 #J kg-1 K-1
-#swe0130 = [0.77,0.91,0.75,0.72]; T0130 = [-1.25,-3.5,-6.5,-8.5] 
-#swe0305 = [0.83,0.94,0.65,0.91,0.68,0.61,0.37]; T0305 = [-0.45,-1.45,-2.45,-3.4,-5.35,-8,-4.7] #14:30 #3734
-#swe0312 = [0.81,0.91,0.85,0.76,0.69,0.61,0.38,0.22]; T0312 = [-0.8,-1.8,-2.4,-3.2,-3.8,-4.3,-4.6,-1]
-#swe0319 = [0.83,0.84,0.95,0.75,0.69,0.36,0.27,0.34]; T0319 = [-0.4,-1,-1.4,-1.5,-1.5,-1.5,-0.7,0]
-#swe0326 = [0.93,0.87,0.75,0.81,0.70,0.80,0.63]; T0326 = [-0.06,-0.2,-0.2,-0.2,-0.3,-0.7,-0.3]
-#swe0402 = [0.65,1.07,1.03,0.85,1.13,0.32,0.82,0.22]; T0402 = [0,0,0,0,0,0,0,0]
-#swe0418 = [0.84,1.19,1.18,1.17,0.47,1.04,0.89]; T0418 = [0,0,0,0,0,0,-1.2]
-#swe0509 = [0.35,0.48]; T0509 = [-0.5,-0.3]
-#
-#cc0130 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0130,T0130)))]
-#cc0305 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0305,T0305)))]
-#cc0312 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0312,T0312)))]
-#cc0319 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0319,T0319)))]
-#cc0326 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0326,T0326)))]
-#cc0402 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0402,T0402)))]
-#cc0418 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0418,T0418)))]
-#cc0423 = [0.52*-1*0.05*-2102/1000000]
-#cc0502 = [0]
-#cc0509 = [sum(np.multiply((heatCapacityIce/1000000),np.multiply(swe0509,T0509)))]
-#%% modeled cold content in each day
-#nlayerTemp =  readVariablefromNcfilesDatasetasDF(av_all,'mLayerTemp',hru_names_df[0])
-#nsnow =  readVariablefromNcfilesDatasetasDF(av_all,'nSnow',hru_names_df[0])
-#nlayer = readVariablefromNcfilesDatasetasDF(av_all,'nLayers',hru_names_df[0])
-#
-#%% number of snowlayer
-#nsnow0305 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],3734)).T; nsnow0305.columns = hru_names_df[0]
-#nsnow0509 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,hru_names_df[0],5289)).T; nsnow0509.columns = hru_names_df[0]
-#
-### sum of all layers befor target layer
-#sumlayer0305 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],3734)).T; sumlayer0305.columns = hru_names_df[0]
-#sumlayer0509 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,hru_names_df[0],5289)).T; sumlayer0509.columns = hru_names_df[0]
-#
-#%%snow layer temperature
-#snowlayertemp0305 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0305,nsnow0305)
-#snowlayertemp0509 = snowLayerAttributeforSpecificDate(nlayerTemp,hru_names_df[0],sumlayer0509,nsnow0509)
-#
-##%% volumetric fraction of ice in snow layers
-#volfracIce0305 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0305,nsnow0305)
-#volfracIce0509 = snowLayerAttributeforSpecificDate(nvolfracIce,hru_names_df[0],sumlayer0509,nsnow0509)
-#
-##%% volumetric fraction of liquid in snow layers
-#volfracLiq0305 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0305,nsnow0305)
-#volfracLiq0509 = snowLayerAttributeforSpecificDate(nvolfracliq,hru_names_df[0],sumlayer0509,nsnow0509)
-#
-##%% height of each snow layer
-#height0305 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0305,nsnow0305)
-#height0509 = snowLayerAttributeforSpecificDate(nheight,hru_names_df[0],sumlayer0509,nsnow0509)
-#
-#height0305layer = depthOfLayers(height0305)
-#height0509layer = depthOfLayers(height0509)
-#
-#%% cold content in each day
-#coldcontent0305 = coldContentFunc(hru_names_df[0],volfracLiq0305,volfracIce0305,snowlayertemp0305,height0305layer)
-#coldcontent0509 = coldContentFunc(hru_names_df[0],volfracLiq0509,volfracIce0509,snowlayertemp0509,height0509layer)
 #
 #%% defining criteria
 #coldcontentcrit = [abs(values) for values in mySubtract(coldcontent0305,cc0305)]
 meltingRateCrit = [abs(values) for values in mySubtract(meltingrateAvg_mod,meltingrateAvg_obs)]
 maxSWEcrit = [abs(values) for values in mySubtract(maxSWE,maxSWE_obs)]
 
-fig = plt.figure(figsize=(20,15))
-xs = meltingRateCrit
-ys = maxSWEcrit
-plt.scatter(xs, ys)
-plt.title('criteria for best combos')
-plt.xlabel('delta_maxSWE (mm)',fontsize=20)
-plt.ylabel('delta_meltingRate (cm/day)',fontsize=20)
-plt.savefig('SA2/'+'maxswe_meltinRateAvg')
+#fig = plt.figure(figsize=(20,15))
+#xs = meltingRateCrit
+#ys = maxSWEcrit
+#plt.scatter(xs, ys)
+#plt.title('criteria for best combos')
+#plt.xlabel('delta_maxSWE (mm)',fontsize=20)
+#plt.ylabel('delta_meltingRate (cm/day)',fontsize=20)
+#plt.savefig('SA2/'+'maxswe_meltinRateAvg')
 
 #coldcontentcrit_df = pd.DataFrame(coldcontentcrit, columns=['coldContent'])
 meltingRateCrit_df = pd.DataFrame(meltingRateCrit, columns=['meltingRate'])
@@ -446,15 +351,82 @@ maxSWECrit_df = pd.DataFrame(maxSWEcrit, columns=['maxSWE'])
 criteria_df = pd.concat([meltingRateCrit_df, maxSWECrit_df], axis=1) #coldcontentcrit_df, 
 criteria_df.set_index(hru_names_df[0],inplace=True)
 Apareto_model_param = pd.DataFrame(criteria_df.index[((criteria_df['maxSWE']) <= 70) & ((criteria_df['meltingRate'])<=0.2)].tolist()) # & ((criteria_df['coldContent'])<=7)
-#%% adding cold content criteria
 
-nvolfracIce = readVariablefromNcfilesDatasetasDF(av_all,'mLayerVolFracIce',Apareto_model_param[0])
-#nvolfracliq = readVariablefromNcfilesDatasetasDF(av_all,'mLayerVolFracLiq',hru_names_df[0])
-#nheight = readVariablefromNcfilesDatasetasDF(av_all,'mLayerHeight',hru_names_df[0])
+#%% **************************************************************************************************
+## ************************** calculating cold content ************************************************
+##observed cold content in each day
 
+heatCapacityIce1 = -2102. #J kg-1 K-1
+swe0305 = [0.83,0.94,0.65,0.91,0.68,0.61,0.37]; T0305 = [-0.45,-1.45,-2.45,-3.4,-5.35,-8,-4.7] #14:30 #3734
+swe0312 = [0.81,0.91,0.85,0.76,0.69,0.61,0.38,0.22]; T0312 = [-0.8,-1.8,-2.4,-3.2,-3.8,-4.3,-4.6,-1] #14:00 #3902
+swe0319 = [0.83,0.84,0.95,0.75,0.69,0.36,0.27,0.34]; T0319 = [-0.4,-1,-1.4,-1.5,-1.5,-1.5,-0.7,0] # 12:30 #4068
+swe0326 = [0.93,0.87,0.75,0.81,0.70,0.80,0.63]; T0326 = [-0.06,-0.2,-0.2,-0.2,-0.3,-0.7,-0.3] #12;30 #4236
 
+cc0305 = [sum(np.multiply((heatCapacityIce1/1000000.),np.multiply(swe0305,T0305)))]
+cc0312 = [sum(np.multiply((heatCapacityIce1/1000000.),np.multiply(swe0312,T0312)))]
+cc0319 = [sum(np.multiply((heatCapacityIce1/1000000.),np.multiply(swe0319,T0319)))]
+cc0326 = [sum(np.multiply((heatCapacityIce1/1000000),np.multiply(swe0326,T0326)))]
 
+coldContenAvg_obs = np.mean([cc0305,cc0312,cc0319])
+#%% calculating modeled cold content in each day
+nvolfracIce = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerVolFracIce',hru_names_df[0],Apareto_model_param[0]), axis=1)
+nvolfracliq = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerVolFracLiq',hru_names_df[0],Apareto_model_param[0]), axis=1)
+nheight = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerHeight',hru_names_df[0],Apareto_model_param[0]), axis=1)
+nlayerTemp =  pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerTemp',hru_names_df[0],Apareto_model_param[0]), axis=1)
+nsnow =  pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'nSnow',hru_names_df[0],Apareto_model_param[0]), axis=1)
+nlayer = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'nLayers',hru_names_df[0],Apareto_model_param[0]), axis=1)
 
+#%% number of snowlayer
+nsnow0305 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,Apareto_model_param[0],3734)).T; nsnow0305.columns = Apareto_model_param[0]
+nsnow0312 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,Apareto_model_param[0],3902)).T; nsnow0312.columns = Apareto_model_param[0]
+nsnow0319 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,Apareto_model_param[0],4068)).T; nsnow0319.columns = Apareto_model_param[0]
+nsnow0319 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow,Apareto_model_param[0],4236)).T; nsnow0319.columns = Apareto_model_param[0]
+
+# sum of all layers befor target layer
+sumlayer0305 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,Apareto_model_param[0],3734)).T; sumlayer0305.columns = Apareto_model_param[0]
+sumlayer0312 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,Apareto_model_param[0],3902)).T; sumlayer0312.columns = Apareto_model_param[0]
+sumlayer0319 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer,Apareto_model_param[0],4068)).T; sumlayer0319.columns = Apareto_model_param[0]
+#%%snow layer temperature
+snowlayertemp0305 = snowLayerAttributeforSpecificDate(nlayerTemp,Apareto_model_param[0],sumlayer0305,nsnow0305)
+snowlayertemp0312 = snowLayerAttributeforSpecificDate(nlayerTemp,Apareto_model_param[0],sumlayer0312,nsnow0312)
+snowlayertemp0319 = snowLayerAttributeforSpecificDate(nlayerTemp,Apareto_model_param[0],sumlayer0319,nsnow0319)
+
+#%% volumetric fraction of ice in snow layers
+volfracIce0305 = snowLayerAttributeforSpecificDate(nvolfracIce,Apareto_model_param[0],sumlayer0305,nsnow0305)
+volfracIce0312 = snowLayerAttributeforSpecificDate(nvolfracIce,Apareto_model_param[0],sumlayer0312,nsnow0312)
+volfracIce0319 = snowLayerAttributeforSpecificDate(nvolfracIce,Apareto_model_param[0],sumlayer0319,nsnow0319)
+
+#%% volumetric fraction of liquid in snow layers
+volfracLiq0305 = snowLayerAttributeforSpecificDate(nvolfracliq,Apareto_model_param[0],sumlayer0305,nsnow0305)
+volfracLiq0312 = snowLayerAttributeforSpecificDate(nvolfracliq,Apareto_model_param[0],sumlayer0312,nsnow0312)
+volfracLiq0319 = snowLayerAttributeforSpecificDate(nvolfracliq,Apareto_model_param[0],sumlayer0319,nsnow0319)
+#%% height of each snow layer
+height0305 = snowLayerAttributeforSpecificDate(nheight,Apareto_model_param[0],sumlayer0305,nsnow0305)
+height0312 = snowLayerAttributeforSpecificDate(nheight,Apareto_model_param[0],sumlayer0312,nsnow0312)
+height0319 = snowLayerAttributeforSpecificDate(nheight,Apareto_model_param[0],sumlayer0319,nsnow0319)
+
+height0305layer = depthOfLayers(height0305)
+height0312layer = depthOfLayers(height0312)
+height0319layer = depthOfLayers(height0319)
+
+#%% cold content in each day
+def coldContentFunc(hruname,volfracLiq,volfracIce,snowlayertemp,layerHeight):
+    densityofWater = 997. #kg/m³
+    densityofIce = 917. #kg/m3
+    heatCapacityIce2 = -2102./1000000. #Mj kg-1 m3-1
+    coldcontent = []
+    for nlst in range (np.size(hruname)):
+        swe = np.array(sum2lists(myMultiply(volfracLiq[nlst],densityofWater/1000.),myMultiply(volfracIce[nlst],densityofIce/1000.))) #[swe] = m
+        temp = np.array(mySubtract(snowlayertemp[nlst],273.2))
+        HCItHS = np.array(myMultiply(heatCapacityIce2,layerHeight[nlst]))
+        cct = sum(list(swe*temp*HCItHS))
+        coldcontent.append(cct)
+    return coldcontent
+
+coldcontent0305 = coldContentFunc(Apareto_model_param[0],volfracLiq0305,volfracIce0305,snowlayertemp0305,height0305layer)
+coldcontent0312 = coldContentFunc(Apareto_model_param[0],volfracLiq0312,volfracIce0312,snowlayertemp0312,height0312layer)
+coldcontent0319 = coldContentFunc(Apareto_model_param[0],volfracLiq0319,volfracIce0319,snowlayertemp0319,height0319layer)
+coldContentAvg_mod = np.mean([coldcontent0305,coldcontent0312,coldcontent0319],axis=0)
 
 
 #xs = coldcontent0305
@@ -479,17 +451,23 @@ nvolfracIce = readVariablefromNcfilesDatasetasDF(av_all,'mLayerVolFracIce',Apare
 ##plt.savefig('SA2/'+'sc2')
 ##plt.show()
 
+#%%
+##for varname in av_all[0].variables.keys():
+##    var = av_all[0].variables[varname]
+##    print (varname, var.dtype, var.dimensions, var.shape)
+#%% day of snow disappreance plot
+##plt.xticks(x, hru[::3], rotation=25)
+##for namefile in out_names:
+##    x = list(np.arange(1,244))
+##    fig = plt.figure(figsize=(20,15))
+##    plt.bar(x,zerosnowdate_residual_df[namefile])
+##    plt.title(namefile, fontsize=42)
+##    plt.xlabel('hrus',fontsize=30)
+##    plt.ylabel('residual dosd (day)', fontsize=30)
+##    #vax.yaxis.set_label_coords(0.5, -0.1) 
+##    plt.savefig('SA2/'+namefile)
 
-
-
-
-
-
-
-
-
-
-
+#%%        
 
 
 

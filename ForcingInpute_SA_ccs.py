@@ -105,7 +105,7 @@ tvalueSa = num2date(saTime, units=t_unitS, calendar=t_cal)
 saDate = [i.strftime("%Y-%m-%d %H:%M") for i in tvalueSa] # to display dates as string #i.strftime("%Y-%m-%d %H:%M")
 #%% swamp angel forcing data dataframe
 sa_forcing2 = sa_forcing[:,[3,6,7,8,9,10,11,12,13,14]]   #[:,1:]  #np.delete(sa_forcing, 0, axis=1)
-sa_df = pd.DataFrame (sa_forcing2, columns=['day','pptrate','SWRadAtm','LWRadAtm','airtemp','windspd','airpres',
+sa_df = pd.DataFrame (sa_forcing2, columns=['hour','pptrate','SWRadAtm','LWRadAtm','airtemp','windspd','airpres',
                                             'spechum','relative_humidity[%]','dewpoint_temperature[K]'])
 sa_df.set_index(pd.DatetimeIndex(saDate),inplace=True)
 #%% swamp angel Temp and ppt average to select the year
@@ -114,14 +114,42 @@ temp_meanyr=temp_data.resample("A").mean()
 
 ppt_data=pd.Series(np.array(sa_df['pptrate']),index=pd.DatetimeIndex(saDate))
 ppt_meanyr=ppt_data.resample("A").sum()
+
+swr_data=pd.Series(np.array(sa_df['SWRadAtm']),index=pd.DatetimeIndex(saDate))
+lwr_data=pd.Series(np.array(sa_df['LWRadAtm']),index=pd.DatetimeIndex(saDate))
+sh_data=pd.Series(np.array(sa_df['spechum']),index=pd.DatetimeIndex(saDate))
+
 #%% climate change scenarios
 month = ['Jan', 'Feb',	'Mar',	'Apr',	'May',	'Jun',	'Jul',	'Aug',	'Sep',	'Oct',	'Nov',	'Dec']
+daysinMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
+monthDic = {'Jan':31, 'Feb':28,	'Mar':31,	'Apr':30,	'May':31,	'Jun':30,	'Jul':31,	'Aug':31,	'Sep':30,	'Oct':31,	'Nov':30,	'Dec':31}
+
 LWRD_delta =	[23.57,22.70,21.58,20.54,20.80,25.72,32.23,32.54,32.71,30.97,30.89,27.67]
-SWRD_delta = [-4.49,-5.44,-6.34,-8.14,-11.10,-5.01,-1.29,-4.26,-6.27,-1.33,-7.74,-6.34]
+SWRD_delta0 = [-4.49,-5.44,-6.34,-8.14,-11.10,-5.01,-1.29,-4.26,-6.27,-1.33,-7.74,-6.34]
+SWRD_delta = [0.9681,0.9603,0.9681,0.9699,0.9682,0.9942,1.0105,1.0109,1.0070,1.0163,0.9736,0.9592]
 Tmean_delta = [4.95,4.46,4.20,4.23,4.89,5.87,5.78,5.36,5.32,5.92,6.30,5.66]
 Shumidity_delta = [0.0017,0.0018,0.0017,0.0016,0.0017,0.0019,0.0022,0.0025,0.0028,0.0030,0.0028,0.0022]
 
+#temp1 = []
+#for iii in range (np.size(tempcopy)):
+#    if tempcopy.index.month[iii]==1:
+#        temp1.append(tempcopy[iii]+Tmean_delta[1])
+#    else:temp1.append(tempcopy[iii])
+temp_delta = temp_data.copy()
+lwr_delta = lwr_data.copy()
+sh_delta = sh_data.copy()
+for mon in range (12):
+    temp_delta.loc[(temp_delta.index.month==mon+1)] = Tmean_delta[mon]
+    lwr_delta.loc[(lwr_delta.index.month==mon+1)] = LWRD_delta[mon]
+    sh_delta.loc[(sh_delta.index.month==mon+1)] = Shumidity_delta[mon]
+temp_ccs = np.sum([temp_data, temp_delta], axis=0)
+lwr_ccs = np.sum([lwr_data, lwr_delta], axis=0)
+sh_ccs = np.sum([sh_data, sh_delta], axis=0)
 
+swr_delta = swr_data.copy()
+for mon in range (12):
+    swr_delta.loc[(swr_delta.index.month==mon+1)] = SWRD_delta[mon]
+swr_ccs = swr_data*swr_delta
 #%% # I go through the a forcing file from the test cases to see what our netcdfs need to look like
 print sbFD.file_format
 # read out variables, data types, and dimensions of original forcing netcdf
