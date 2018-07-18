@@ -7,58 +7,7 @@ import matplotlib.pyplot as plt
 import itertools
 import csv
 #%% hru names
-p1 = [0.1] #LAIMIN
-p2 = [1] #LAIMAX
-p3 = [0.1] #winterSAI
-p4 = [0.9] #summerLAI
-p5 = [0.5] #rootingDepth
-p6 = [0.5] #heightCanopyTop
-p7 = [0.01] #heightCanopyBottom
-p8 = [0.89] #throughfallScaleSnow
-p9 = [55] #newSnowDenMin 
-
-p10 = [500000, 1000000, 1300000] ##albedoDecayRate |       1.0d+6 |       0.1d+6 |       5.0d+6 
-p11 = [0.8, 0.9, 0.94] #albedoMaxVisible |       0.9500 |       0.7000 |       0.9500
-p12 = [0.6, 0.68, 0.74] #albedoMinVisible |       0.7500 |       0.5000 |       0.7500
-p13 = [0.55, 0.65, 0.7] #albedoMaxNearIR |       0.6500 |       0.5000 |       0.7500
-p14 = [0.2, 0.3, 0.4] #albedoMinNearIR  |       0.3000 |       0.1500 |       0.4500
-
-p15 = [0.001] #[0.001, 0.002] #z0Snow
-
-p16 = [1]# 1, 3, 6] #albedoRefresh |       1.0000 |       1.0000 |      10.0000
-
-p17 = [2] #2, 3, 4] #mw_exp exponent for meltwater flow
-
-p18 = [0.4] #0.2, 0.4 , 0.6] #fixedThermalCond_snow
-
-#p21 = [0.700, 1.000, 1.500] #Mahrt87_eScale  
-#p14 = [0.040, 0.060, 0.080] #Fcapil
-#p15 = [0.100, 0.015, 0.350] #k_snow
-#p18 = [0.150, 0.200, 0.400] #critRichNumber  
-#p19 = [9.300, 9.400, 9.500] #Louis79_bparam  
-#p20 = [5.200, 5.300, 5.400] #Louis79_cStar 
-#p15 = [105] #51, 70, 105] #constSnowDen 70.00, 100.0, 170.0    55 56 57 
-
-def hru_ix_ID(p10, p11, p12, p13, p14):#, p15, p16, p17, p18):
-    ix10 = np.arange(1,len(p10)+1)
-    ix11 = np.arange(1,len(p11)+1)
-    ix12 = np.arange(1,len(p12)+1)
-    ix13 = np.arange(1,len(p13)+1)
-    ix14 = np.arange(1,len(p14)+1)
-#    ix15 = np.arange(1,len(p15)+1)
-#    ix16 = np.arange(1,len(p16)+1)
-#    ix17 = np.arange(1,len(p17)+1)
-#    ix18 = np.arange(1,len(p18)+1)
-    c = list(itertools.product(ix10,ix11,ix12,ix13,ix14))#,ix15,ix16,ix17,ix18))
-    ix_numlist=[]
-    for tup in c:
-        ix_numlist.append(''.join(map(str, tup)))
-    new_list = [float(i) for i in ix_numlist]
-
-    return(new_list)  
-
-hruidxID = hru_ix_ID(p10, p11, p12, p13, p14)#, p15, p16, p17, p18)
-#
+hruidxID = list(np.arange(101,106))
 hru_num = np.size(hruidxID)
 #%% #Swamp Angel forcing data
 #swampangel_forcing = open('swamp_angel_forcingdata2_corrected.csv', 'rb')
@@ -125,7 +74,7 @@ daysinMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
 monthDic = {'Jan':31, 'Feb':28,	'Mar':31,	'Apr':30,	'May':31,	'Jun':30,	'Jul':31,	'Aug':31,	'Sep':30,	'Oct':31,	'Nov':30,	'Dec':31}
 
 LWRD_delta =	[23.57,22.70,21.58,20.54,20.80,25.72,32.23,32.54,32.71,30.97,30.89,27.67]
-SWRD_delta0 = [-4.49,-5.44,-6.34,-8.14,-11.10,-5.01,-1.29,-4.26,-6.27,-1.33,-7.74,-6.34]
+#SWRD_delta0 = [-4.49,-5.44,-6.34,-8.14,-11.10,-5.01,-1.29,-4.26,-6.27,-1.33,-7.74,-6.34]
 SWRD_delta = [0.9681,0.9603,0.9681,0.9699,0.9682,0.9942,1.0105,1.0109,1.0070,1.0163,0.9736,0.9592]
 Tmean_delta = [4.95,4.46,4.20,4.23,4.89,5.87,5.78,5.36,5.32,5.92,6.30,5.66]
 Shumidity_delta = [0.0017,0.0018,0.0017,0.0016,0.0017,0.0019,0.0022,0.0025,0.0028,0.0030,0.0028,0.0022]
@@ -142,14 +91,14 @@ for mon in range (12):
     temp_delta.loc[(temp_delta.index.month==mon+1)] = Tmean_delta[mon]
     lwr_delta.loc[(lwr_delta.index.month==mon+1)] = LWRD_delta[mon]
     sh_delta.loc[(sh_delta.index.month==mon+1)] = Shumidity_delta[mon]
-temp_ccs = np.sum([temp_data, temp_delta], axis=0)
-lwr_ccs = np.sum([lwr_data, lwr_delta], axis=0)
-sh_ccs = np.sum([sh_data, sh_delta], axis=0)
+temp_ccs = np.sum([temp_data, temp_delta], axis=0); temp_ccs_df=pd.DataFrame(temp_ccs,columns=['airtemp'])
+lwr_ccs = np.sum([lwr_data, lwr_delta], axis=0); lwr_ccs_df=pd.DataFrame(lwr_ccs,columns=['LWRadAtm'])
+sh_ccs = np.sum([sh_data, sh_delta], axis=0); sh_ccs_df=pd.DataFrame(sh_ccs,columns=['spechum'])
 
 swr_delta = swr_data.copy()
 for mon in range (12):
     swr_delta.loc[(swr_delta.index.month==mon+1)] = SWRD_delta[mon]
-swr_ccs = swr_data*swr_delta
+swr_ccs = swr_data*swr_delta; swr_ccs_df=pd.DataFrame(swr_ccs,columns=['SWRadAtm'])
 #%% # I go through the a forcing file from the test cases to see what our netcdfs need to look like
 print sbFD.file_format
 # read out variables, data types, and dimensions of original forcing netcdf
@@ -163,7 +112,7 @@ for dimname in sbFD.dimensions.keys():
 
 atemp = sbFD.variables['airtemp'][:]
 #%% make new nc file
-new_fc_sa = Dataset("SwampAngel_forcing_sa2.nc",'w',format='NETCDF3_CLASSIC')
+new_fc_sa = Dataset("SwampAngel_forcing_ccs_sc.nc",'w',format='NETCDF3_CLASSIC')
 # define dimensions 
 hru = new_fc_sa.createDimension('hru', hru_num)
 time = new_fc_sa.createDimension('time', None)
@@ -224,85 +173,46 @@ ds[:] = step
 new_ix = np.array(saTime) #new_ix = sbFD.variables['time'][:]
 times[:] = new_ix
 
-lwr_sa = np.array(sa_df['LWRadAtm'])  #lwr_sb = sbFD.variables['LWRadAtm'][:]
+lwr_sa = np.array(lwr_ccs_df['LWRadAtm']) 
 lwr_sa_hru = np.repeat(lwr_sa[:,np.newaxis], hru_num, axis=1)
 lwrad[:] = lwr_sa_hru
 
-swr_sa = np.array(sa_df['SWRadAtm'])
+swr_sa = np.array(swr_ccs_df['SWRadAtm'])
 swr_sa_hru = np.repeat(swr_sa[:,np.newaxis], hru_num, axis=1)
 swrad[:] = swr_sa_hru
+
+at_sa = np.array(temp_ccs_df['airtemp'])
+at_sa_hru = np.repeat(at_sa[:,np.newaxis], hru_num, axis=1) 
+airtemp[:] = at_sa_hru
+
+sh_sa = np.array(sh_ccs_df['spechum'])
+sh_sa_hru = np.repeat(sh_sa[:,np.newaxis], hru_num, axis=1) 
+spechum[:] = sh_sa_hru
 
 ap_sa = np.array(sa_df['airpres'])
 ap_sa_hru = np.repeat(ap_sa[:,np.newaxis], hru_num, axis=1)
 airpres[:] = ap_sa_hru
 
-at_sa = np.array(sa_df['airtemp'])
-at_sa_hru = np.repeat(at_sa[:,np.newaxis], hru_num, axis=1) 
-airtemp[:] = at_sa_hru
-
 ws_sa = np.array(sa_df['windspd'])
 ws_sa_hru = np.repeat(ws_sa[:,np.newaxis], hru_num, axis=1) 
 windspd[:] = ws_sa_hru
-
-sh_sa = np.array(sa_df['spechum'])
-sh_sa_hru = np.repeat(sh_sa[:,np.newaxis], hru_num, axis=1) 
-spechum[:] = sh_sa_hru
 
 ppt_sa = np.array(sa_df['pptrate'])
 ppt_sa_hru = np.repeat(ppt_sa[:,np.newaxis], hru_num, axis=1) 
 pptrate[:] = ppt_sa_hru
 #%%
-#ppt_sa0 = np.array(sa_df['pptrate'])
-#ppt_sa1 = []
-#for cpi in range (np.size(ppt_sa0)):
-#    if at_sa [cpi] <= 274 :
-#        ppt_sa1.append(ppt_sa0[cpi]+ppt_sa0[cpi]*(1-((np.exp(4.61-0.04*((ws_sa[cpi])**1.75)))/100)))
-#    else: ppt_sa1.append(ppt_sa0[cpi])
-#ppt_sa = np.array(ppt_sa1)
-#ppt_sa_hru = np.repeat(ppt_sa[:,np.newaxis], hru_num, axis=1) 
-#pptrate[:] = ppt_sa_hru
 
-#ppt_sa0 = np.array(sa_df['pptrate'])
-#ppt_sa1 = []
-#for cpi in range (np.size(ppt_sa0)):
-#    if at_sa [cpi] <= 274 :
-#        ppt_sa1.append(ppt_sa0[cpi]+ppt_sa0[cpi]*(1-((np.exp(4.61-0.16*(ws_sa[cpi]**1.28)))/100)))
-#    else: ppt_sa1.append(ppt_sa0[cpi])
-#ppt_sa = np.array(ppt_sa1)
-#ppt_sa_hru = np.repeat(ppt_sa[:,np.newaxis], hru_num, axis=1) 
-#pptrate[:] = ppt_sa_hru
-
-#%%specific humididty calculations***********************************************
-#at0_sb = sbFD.variables['airtemp'][:]
-#
-#e_t = (ap_sb * sh_sb)/0.622
-#p_da = ap_sb - e_t
-#e_star_t = 611*(np.exp((17.27*(at0_sb-273.15))/(at0_sb-273.15+237.3)))
-#rh = e_t/e_star_t
-#
-#e_star_t2 = 611*(np.exp((17.27*(at0_sb+2-273.15))/(at0_sb+2-273.15+237.3)))
-#e_star_t4 = 611*(np.exp((17.27*(at0_sb+4-273.15))/(at0_sb+4-273.15+237.3)))
-#
-#e_t2 = rh * e_star_t2
-#e_t4 = rh * e_star_t4
-#
-#p_t2 = p_da + e_t2
-#p_t4 = p_da + e_t4
-#
-#sh_t2 = 0.622 * e_t2 / p_t2
-#sh_t4 = 0.622 * e_t4 / p_t4
-#%%******************************************************************************
-test = new_fc_sa.variables['pptrate'][:]
+test = new_fc_sa.variables['LWRadAtm'][:]
 
 # close the file to write it
 new_fc_sa.close()
 #%%
-testfd = Dataset("SwampAngel_forcing_sa2.nc")
+#testfd = Dataset("SwampAngel_forcing_ccs_lj.nc")
 #print testfd.file_format
 # read out variables, data types, and dimensions of original forcing netcdf
-for varname in testfd.variables.keys():
-    var = testfd.variables[varname]
-    print (varname, var.dtype, var.dimensions, var.shape)
+#for varname in testfd.variables.keys():
+#    var = testfd.variables[varname]
+#    print (varname, var.dtype, var.dimensions, var.shape)
 
 
 
