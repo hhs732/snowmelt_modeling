@@ -1,4 +1,4 @@
-#%matplotlib inline    /bin/bash runTestCases_docker.sh
+#%matplotlib inline    /bin/bash runTestCases_docker_hs.sh
 import numpy as np
 import matplotlib.pyplot as plt 
 from netCDF4 import Dataset,netcdftime,num2date
@@ -7,8 +7,11 @@ import matplotlib.pyplot as plt
 import itertools
 import csv
 #%% hru names
-hruidxID = list(np.arange(101,106))
+hruidxID = list(np.arange(101,109))
 hru_num = np.size(hruidxID)
+
+new_fc_sa = Dataset("SwampAngel_forcing_hs_mj.nc",'w',format='NETCDF3_CLASSIC')
+
 #%% #Swamp Angel forcing data
 #swampangel_forcing = open('swamp_angel_forcingdata2_corrected.csv', 'rb')
 #sa_forcing = csv.reader(swampangel_forcing)#, delimiter=',')
@@ -69,36 +72,36 @@ lwr_data=pd.Series(np.array(sa_df['LWRadAtm']),index=pd.DatetimeIndex(saDate))
 sh_data=pd.Series(np.array(sa_df['spechum']),index=pd.DatetimeIndex(saDate))
 
 #%% climate change scenarios
-month = ['Jan', 'Feb',	'Mar',	'Apr',	'May',	'Jun',	'Jul',	'Aug',	'Sep',	'Oct',	'Nov',	'Dec']
-daysinMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
-monthDic = {'Jan':31, 'Feb':28,	'Mar':31,	'Apr':30,	'May':31,	'Jun':30,	'Jul':31,	'Aug':31,	'Sep':30,	'Oct':31,	'Nov':30,	'Dec':31}
-
-LWRD_delta =	[23.57,22.70,21.58,20.54,20.80,25.72,32.23,32.54,32.71,30.97,30.89,27.67]
-#SWRD_delta0 = [-4.49,-5.44,-6.34,-8.14,-11.10,-5.01,-1.29,-4.26,-6.27,-1.33,-7.74,-6.34]
-SWRD_delta = [0.9681,0.9603,0.9681,0.9699,0.9682,0.9942,1.0105,1.0109,1.0070,1.0163,0.9736,0.9592]
-Tmean_delta = [4.95,4.46,4.20,4.23,4.89,5.87,5.78,5.36,5.32,5.92,6.30,5.66]
-Shumidity_delta = [0.0017,0.0018,0.0017,0.0016,0.0017,0.0019,0.0022,0.0025,0.0028,0.0030,0.0028,0.0022]
-
-#temp1 = []
-#for iii in range (np.size(tempcopy)):
-#    if tempcopy.index.month[iii]==1:
-#        temp1.append(tempcopy[iii]+Tmean_delta[1])
-#    else:temp1.append(tempcopy[iii])
-temp_delta = temp_data.copy()
-lwr_delta = lwr_data.copy()
-sh_delta = sh_data.copy()
-for mon in range (12):
-    temp_delta.loc[(temp_delta.index.month==mon+1)] = Tmean_delta[mon]
-    lwr_delta.loc[(lwr_delta.index.month==mon+1)] = LWRD_delta[mon]
-    sh_delta.loc[(sh_delta.index.month==mon+1)] = Shumidity_delta[mon]
-temp_ccs = np.sum([temp_data, temp_delta], axis=0); temp_ccs_df=pd.DataFrame(temp_ccs,columns=['airtemp'])
-lwr_ccs = np.sum([lwr_data, lwr_delta], axis=0); lwr_ccs_df=pd.DataFrame(lwr_ccs,columns=['LWRadAtm'])
-sh_ccs = np.sum([sh_data, sh_delta], axis=0); sh_ccs_df=pd.DataFrame(sh_ccs,columns=['spechum'])
-
-swr_delta = swr_data.copy()
-for mon in range (12):
-    swr_delta.loc[(swr_delta.index.month==mon+1)] = SWRD_delta[mon]
-swr_ccs = swr_data*swr_delta; swr_ccs_df=pd.DataFrame(swr_ccs,columns=['SWRadAtm'])
+#month = ['Jan', 'Feb',	'Mar',	'Apr',	'May',	'Jun',	'Jul',	'Aug',	'Sep',	'Oct',	'Nov',	'Dec']
+#daysinMonth = [31,28,31,30,31,30,31,31,30,31,30,31]
+#monthDic = {'Jan':31, 'Feb':28,	'Mar':31,	'Apr':30,	'May':31,	'Jun':30,	'Jul':31,	'Aug':31,	'Sep':30,	'Oct':31,	'Nov':30,	'Dec':31}
+#
+#LWRD_delta =	[23.57,22.70,21.58,20.54,20.80,25.72,32.23,32.54,32.71,30.97,30.89,27.67]
+##SWRD_delta0 = [-4.49,-5.44,-6.34,-8.14,-11.10,-5.01,-1.29,-4.26,-6.27,-1.33,-7.74,-6.34]
+#SWRD_delta = [0.9681,0.9603,0.9681,0.9699,0.9682,0.9942,1.0105,1.0109,1.0070,1.0163,0.9736,0.9592]
+#Tmean_delta = [4.95,4.46,4.20,4.23,4.89,5.87,5.78,5.36,5.32,5.92,6.30,5.66]
+#Shumidity_delta = [0.0017,0.0018,0.0017,0.0016,0.0017,0.0019,0.0022,0.0025,0.0028,0.0030,0.0028,0.0022]
+#
+##temp1 = []
+##for iii in range (np.size(tempcopy)):
+##    if tempcopy.index.month[iii]==1:
+##        temp1.append(tempcopy[iii]+Tmean_delta[1])
+##    else:temp1.append(tempcopy[iii])
+#temp_delta = temp_data.copy()
+#lwr_delta = lwr_data.copy()
+#sh_delta = sh_data.copy()
+#for mon in range (12):
+#    temp_delta.loc[(temp_delta.index.month==mon+1)] = Tmean_delta[mon]
+#    lwr_delta.loc[(lwr_delta.index.month==mon+1)] = LWRD_delta[mon]
+#    sh_delta.loc[(sh_delta.index.month==mon+1)] = Shumidity_delta[mon]
+#temp_ccs = np.sum([temp_data, temp_delta], axis=0); temp_ccs_df=pd.DataFrame(temp_ccs,columns=['airtemp'])
+#lwr_ccs = np.sum([lwr_data, lwr_delta], axis=0); lwr_ccs_df=pd.DataFrame(lwr_ccs,columns=['LWRadAtm'])
+#sh_ccs = np.sum([sh_data, sh_delta], axis=0); sh_ccs_df=pd.DataFrame(sh_ccs,columns=['spechum'])
+#
+#swr_delta = swr_data.copy()
+#for mon in range (12):
+#    swr_delta.loc[(swr_delta.index.month==mon+1)] = SWRD_delta[mon]
+#swr_ccs = swr_data*swr_delta; swr_ccs_df=pd.DataFrame(swr_ccs,columns=['SWRadAtm'])
 #%% # I go through the a forcing file from the test cases to see what our netcdfs need to look like
 print sbFD.file_format
 # read out variables, data types, and dimensions of original forcing netcdf
@@ -112,7 +115,6 @@ for dimname in sbFD.dimensions.keys():
 
 atemp = sbFD.variables['airtemp'][:]
 #%% make new nc file
-new_fc_sa = Dataset("SwampAngel_forcing_ccs_sc.nc",'w',format='NETCDF3_CLASSIC')
 # define dimensions 
 hru = new_fc_sa.createDimension('hru', hru_num)
 time = new_fc_sa.createDimension('time', None)
@@ -173,21 +175,37 @@ ds[:] = step
 new_ix = np.array(saTime) #new_ix = sbFD.variables['time'][:]
 times[:] = new_ix
 
-lwr_sa = np.array(lwr_ccs_df['LWRadAtm']) 
+lwr_sa = np.array(sa_df['LWRadAtm'])  #lwr_sb = sbFD.variables['LWRadAtm'][:]
 lwr_sa_hru = np.repeat(lwr_sa[:,np.newaxis], hru_num, axis=1)
 lwrad[:] = lwr_sa_hru
 
-swr_sa = np.array(swr_ccs_df['SWRadAtm'])
+swr_sa = np.array(sa_df['SWRadAtm'])
 swr_sa_hru = np.repeat(swr_sa[:,np.newaxis], hru_num, axis=1)
 swrad[:] = swr_sa_hru
 
-at_sa = np.array(temp_ccs_df['airtemp'])
+at_sa = np.array(sa_df['airtemp'])
 at_sa_hru = np.repeat(at_sa[:,np.newaxis], hru_num, axis=1) 
 airtemp[:] = at_sa_hru
 
-sh_sa = np.array(sh_ccs_df['spechum'])
+sh_sa = np.array(sa_df['spechum'])
 sh_sa_hru = np.repeat(sh_sa[:,np.newaxis], hru_num, axis=1) 
 spechum[:] = sh_sa_hru
+
+#lwr_sa = np.array(lwr_ccs_df['LWRadAtm']) 
+#lwr_sa_hru = np.repeat(lwr_sa[:,np.newaxis], hru_num, axis=1)
+#lwrad[:] = lwr_sa_hru
+#
+#swr_sa = np.array(swr_ccs_df['SWRadAtm'])
+#swr_sa_hru = np.repeat(swr_sa[:,np.newaxis], hru_num, axis=1)
+#swrad[:] = swr_sa_hru
+#
+#at_sa = np.array(temp_ccs_df['airtemp'])
+#at_sa_hru = np.repeat(at_sa[:,np.newaxis], hru_num, axis=1) 
+#airtemp[:] = at_sa_hru
+#
+#sh_sa = np.array(sh_ccs_df['spechum'])
+#sh_sa_hru = np.repeat(sh_sa[:,np.newaxis], hru_num, axis=1) 
+#spechum[:] = sh_sa_hru
 
 ap_sa = np.array(sa_df['airpres'])
 ap_sa_hru = np.repeat(ap_sa[:,np.newaxis], hru_num, axis=1)
@@ -202,7 +220,7 @@ ppt_sa_hru = np.repeat(ppt_sa[:,np.newaxis], hru_num, axis=1)
 pptrate[:] = ppt_sa_hru
 #%%
 
-test = new_fc_sa.variables['LWRadAtm'][:]
+test = new_fc_sa.variables['airtemp'][:]
 
 # close the file to write it
 new_fc_sa.close()

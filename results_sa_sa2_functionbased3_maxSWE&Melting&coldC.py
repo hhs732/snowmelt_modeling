@@ -402,22 +402,102 @@ Area = 291 * 10000 #m2
 residualMax = 0.45
 sweVol = Area * residualMax ; print sweVol
 #%%
-DateSa2 = date(av_all,"%Y-%m-%d")
-sax = np.arange(0,np.size(DateSa2))
-sa_xticks = DateSa2
-safig, saax = plt.subplots(1,1, figsize=(20,15))
-plt.xticks(sax, sa_xticks[::1000], rotation=25, fontsize=20)
-saax.xaxis.set_major_locator(ticker.AutoLocator())
-plt.yticks(fontsize=20)
-for hru in Apareto_model_param1[0]:
-    plt.plot(av_swe_df[hru])
-plt.plot(swe_obs2006, 'ok', markersize=15)
-#plt.legend()
-plt.savefig('ccs/'+'best_combo1')
+#DateSa2 = date(av_all,"%Y-%m-%d")
+#sax = np.arange(0,np.size(DateSa2))
+#sa_xticks = DateSa2
+#safig, saax = plt.subplots(1,1, figsize=(20,15))
+#plt.xticks(sax, sa_xticks[::1000], rotation=25, fontsize=20)
+#saax.xaxis.set_major_locator(ticker.AutoLocator())
+#plt.yticks(fontsize=20)
+#for hru in Apareto_model_param1[0]:
+#    plt.plot(av_swe_df[hru])
+#plt.plot(swe_obs2006, 'ok', markersize=15)
+##plt.legend()
+#plt.savefig('ccs/'+'best_combo1')
 #%% **************************************************************************************************
 ## ************************** calculating cold content ************************************************
 ##observed cold content in each day
+heatCapacityIce1 = -2102. #J kg-1 K-1
+swe0305 = [0.83,0.94,0.65,0.91,0.68,0.61,0.37]; T0305 = [-0.45,-1.45,-2.45,-3.4,-5.35,-8,-4.7] #14:30 #3734
+swe0312 = [0.81,0.91,0.85,0.76,0.69,0.61,0.38,0.22]; T0312 = [-0.8,-1.8,-2.4,-3.2,-3.8,-4.3,-4.6,-1] #14:00 #3902
+swe0319 = [0.83,0.84,0.95,0.75,0.69,0.36,0.27,0.34]; T0319 = [-0.4,-1,-1.4,-1.5,-1.5,-1.5,-0.7,0] # 12:30 #4068
+swe0326 = [0.93,0.87,0.75,0.81,0.70,0.80,0.63]; T0326 = [-0.06,-0.2,-0.2,-0.2,-0.3,-0.7,-0.3] #12;30 #4236
 
+cc0305 = [sum(np.multiply((heatCapacityIce1/1000000.),np.multiply(swe0305,T0305)))]
+cc0312 = [sum(np.multiply((heatCapacityIce1/1000000.),np.multiply(swe0312,T0312)))]
+cc0319 = [sum(np.multiply((heatCapacityIce1/1000000.),np.multiply(swe0319,T0319)))]
+cc0326 = [sum(np.multiply((heatCapacityIce1/1000000),np.multiply(swe0326,T0326)))] #after this date, snowpack got isothermal
+
+coldContenAvg_obs = np.mean([cc0305,cc0312,cc0319])
+#%% calculating modeled cold content in each day for 2 sets of best combos
+#nvolfracIce0 = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerVolFracIce',hru_names_df[0],Apareto_model_param0[0]), axis=1)
+#nvolfracliq0 = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerVolFracLiq',hru_names_df[0],Apareto_model_param0[0]), axis=1)
+#nheight0 = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerHeight',hru_names_df[0],Apareto_model_param0[0]), axis=1)
+nlayerTemp0 =  pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerTemp',hru_names_df[0],Apareto_model_param0[0]), axis=1)
+#nsnow0 =  pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'nSnow',hru_names_df[0],Apareto_model_param0[0]), axis=1)
+#nlayer0 = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'nLayers',hru_names_df[0],Apareto_model_param0[0]), axis=1)
+#%%
+#nvolfracIce1 = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerVolFracIce',hru_names_df[0],Apareto_model_param1[0]), axis=1)
+#nvolfracliq1 = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerVolFracLiq',hru_names_df[0],Apareto_model_param1[0]), axis=1)
+#nheight1 = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerHeight',hru_names_df[0],Apareto_model_param1[0]), axis=1)
+#nlayerTemp1 =  pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'mLayerTemp',hru_names_df[0],Apareto_model_param1[0]), axis=1)
+#nsnow1 =  pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'nSnow',hru_names_df[0],Apareto_model_param1[0]), axis=1)
+#nlayer1 = pd.concat(readSomePartofVariableDatafromNcfilesDatasetasDF(av_all,'nLayers',hru_names_df[0],Apareto_model_param1[0]), axis=1)
+
+#%% number of snowlayer
+#nsnow03260 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow0,Apareto_model_param0[0],4236)).T; nsnow03260.columns = Apareto_model_param0[0]
+#nsnow03261 = pd.DataFrame(readSpecificDatafromAllHRUs(nsnow1,Apareto_model_param1[0],4236)).T; nsnow03261.columns = Apareto_model_param1[0]
+#
+## sum of all layers befor target layer
+#sumlayer03260 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer0,Apareto_model_param0[0],4236)).T; sumlayer03260.columns = Apareto_model_param0[0]
+#sumlayer03261 = pd.DataFrame(sumBeforeSpecificDatafromAllHRUs(nlayer1,Apareto_model_param1[0],4236)).T; sumlayer03261.columns = Apareto_model_param1[0]
+
+#%%snow layer temperature
+#snowlayertemp0326 = snowLayerAttributeforSpecificDate(nlayerTemp,Apareto_model_param[0],sumlayer0326,nsnow0326)
+
+#%% volumetric fraction of ice in snow layers
+#volfracIce0326 = snowLayerAttributeforSpecificDate(nvolfracIce,Apareto_model_param[0],sumlayer0326,nsnow0326)
+
+#%% volumetric fraction of liquid in snow layers
+#volfracLiq0326 = snowLayerAttributeforSpecificDate(nvolfracliq,Apareto_model_param[0],sumlayer0326,nsnow0326)
+
+#%% height of each snow layer
+#height0326 = snowLayerAttributeforSpecificDate(nheight,Apareto_model_param[0],sumlayer0326,nsnow0326)
+
+#height0326layer = depthOfLayers(height0326)
+
+#%% cold content in each day
+#coldcontent0326 = coldContentFunc(Apareto_model_param[0],volfracLiq0326,volfracIce0326,snowlayertemp0326,height0326layer)
+
+#sweParet0 = []
+#for paretos in Apareto_model_param[0]:
+#    sweParet0.append(av_swe_df[paretos])
+#sweParet0_df = pd.concat(sweParet0, axis=1)
+#sweParet0_df2 = sweParet0_df.copy(); sweParet0_df2.set_index(av_swe_df['counter'],inplace=True)
+#realMaxSWE = sweParet0_df2.max()
+#realMaxSWE_date = sweParet0_df2.idxmax()
+#%%
+#xs = realMaxSWE_date
+#ys = coldcontent0326
+#plt.scatter(xs, ys)
+#plt.xlabel('maxSWE day',fontsize=20)
+#plt.ylabel('cold content 0326 (Mj/m2)',fontsize=20)
+#plt.savefig('SA2/'+'ccvsmaxsweday')
+
+##3d Plot
+##fig = plt.figure(figsize=(20,15))
+##ax = fig.add_subplot(111, projection='3d')
+##
+##xs = coldcontentcrit
+##ys = meltingRateCrit
+##zs = maxSWEcrit
+##ax.scatter(xs, ys, zs)
+##
+##ax.set_xlabel('cold content (Mj/m2)',fontsize=20)
+##ax.set_ylabel('melting rate (cm/day)',fontsize=20)
+##ax.set_zlabel('maxSWE (mm)',fontsize=20)
+##plt.savefig('SA2/'+'sc2')
+##plt.show()
 
 
 
