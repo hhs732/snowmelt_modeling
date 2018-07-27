@@ -1,4 +1,4 @@
-###       /bin/bash runTestCases_docker.sh   snwDensity snwDensity
+###       /bin/bash runTestCases_dockerD.sh   
 # 2007 - 2008 as wet year for sensirivity analysis 1st step
 import numpy as np
 from netCDF4 import Dataset
@@ -12,7 +12,7 @@ p3 = [0.1] #winterSAI
 p4 = [0.9] #summerLAI
 p5 = [0.5] #rootingDepth
 p6 = [0.5] #heightCanopyTop
-p7 = [0.01] #heightCanopyBottom
+p7 = [0.1] #heightCanopyBottom
 p8 = [0.89] #throughfallScaleSnow
 p9 = [55] #newSnowDenMin 
 
@@ -28,9 +28,9 @@ p16 = [6]# 1, 3, 6] #albedoRefresh |       1.0000 |       1.0000 |      10.0000
 
 p17 = [4] #2, 3, 4] #mw_exp exponent for meltwater flow
 
-p18 = [0.6] #0.2, 0.4 , 0.6] #fixedThermalCond_snow
+#p18 = [0.6] #0.2, 0.4 , 0.6] #fixedThermalCond_snow
 
-paramfile = Dataset("summa_zParamTrial_variableDecayRate_sa_sa2_s2333.nc",'w',format='NETCDF3_CLASSIC') #create new paramtrail.nc file
+paramfile = Dataset("summa_zParamTrial_variableDecayRate_sa_sa2_j2330.nc",'w',format='NETCDF3_CLASSIC') #create new paramtrail.nc file
 
 #p21 = [0.700, 1.000, 1.500] #Mahrt87_eScale  
 #p14 = [0.040, 0.060, 0.080] #Fcapil
@@ -64,16 +64,16 @@ hruidxID = hru_ix_ID(p10, p11, p12, p13, p14)#, p15, p16, p17, p18)
 hru_num = np.size(hruidxID)
 #%%
 # function to create lists of each parameter, this will iterate through to make sure all combinations are covered
-def param_fill(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18): 
-    b = list(itertools.product(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18)) 
-    p1l =[]; p2l =[]; p3l =[]; p4l=[]; p5l = []; p6l =[]; p7l =[]; p8l =[]; p9l =[]; p10l=[]; p11l =[]; p12l =[]; p13l =[]; p14l=[]; p15l = []; p16l =[]; p17l=[]; p18l = []
+def param_fill(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17):#, p18): 
+    b = list(itertools.product(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17))#, p18)) 
+    p1l =[]; p2l =[]; p3l =[]; p4l=[]; p5l = []; p6l =[]; p7l =[]; p8l =[]; p9l =[]; p10l=[]; p11l =[]; p12l =[]; p13l =[]; p14l=[]; p15l = []; p16l =[]; p17l=[]#; p18l = []
     for tup in b:
         p1l.append(tup[0]); p2l.append(tup[1]); p3l.append(tup[2]); p4l.append(tup[3]); p5l.append(tup[4]); p6l.append(tup[5]); p7l.append(tup[6]); p8l.append(tup[7]); 
-        p9l.append(tup[8]); p10l.append(tup[9]); p11l.append(tup[10]); p12l.append(tup[11]); p13l.append(tup[12]); p14l.append(tup[13]); p15l.append(tup[14]); p16l.append(tup[15]); p17l.append(tup[16]); p18l.append(tup[17])
-    return(p1l, p2l, p3l, p4l, p5l, p6l, p7l, p8l, p9l, p10l, p11l, p12l, p13l, p14l, p15l, p16l, p17l, p18l)  
+        p9l.append(tup[8]); p10l.append(tup[9]); p11l.append(tup[10]); p12l.append(tup[11]); p13l.append(tup[12]); p14l.append(tup[13]); p15l.append(tup[14]); p16l.append(tup[15]); p17l.append(tup[16])#; p18l.append(tup[17])
+    return(p1l, p2l, p3l, p4l, p5l, p6l, p7l, p8l, p9l, p10l, p11l, p12l, p13l, p14l, p15l, p16l, p17l)#, p18l)  
 
 # call the function on the parameters
-valst1 = param_fill(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17, p18)  
+valst1 = param_fill(p1, p2, p3, p4, p5, p6, p7, p8, p9, p10, p11, p12, p13, p14, p15, p16, p17)#, p18)  
 
 #%% #create new paramtrail.nc file and adding vaiables to it --- summa_zParamTrial_variableDecayRate_test
 hru = paramfile.createDimension('hru', None)
@@ -81,7 +81,7 @@ hidx = paramfile.createVariable('hruIndex', np.float64,('hru',)) # add hruIndex 
 
 param_nam_list = ['LAIMIN','LAIMAX','winterSAI','summerLAI','rootingDepth','heightCanopyTop','heightCanopyBottom','throughfallScaleSnow','newSnowDenMin',
                   'albedoDecayRate', 'albedoMaxVisible', 'albedoMinVisible', 'albedoMaxNearIR', 'albedoMinNearIR',  
-                  'z0Snow', 'albedoRefresh', 'mw_exp', 'fixedThermalCond_snow'] 
+                  'z0Snow', 'albedoRefresh', 'mw_exp']#, 'fixedThermalCond_snow'] 
 
 for param in param_nam_list:
     paramfile.createVariable(param, np.float64,('hru',))
@@ -119,8 +119,8 @@ for varname in paramfile.variables.keys():
 #print paramfile.variables['hruIndex'][:]
 paramfile.close()
 #%% 
-#varcheck = Dataset ('summa_zParamTrial_variableDecayRate_sa_sa2_s2333.nc')
-#print varcheck.variables['theta_res'][:]
+varcheck = Dataset ("C:\Users\HHS\summaTestCases_2.x\settings\wrrPaperTestCases\swampAngel\paramtrial\summa_zParamTrial_variableDecayRate_sa_sa2_j1110.nc")
+print varcheck.variables['heightCanopyTop'][:]
 #check2 =  varcheck.variables['albedoMaxNearIR'][:]
 #I checked it in Check.py code
 #%% # local attributes file
@@ -173,19 +173,32 @@ local_atrbt.variables['hru2gruId'][:] = c3
 
 local_atrbt.variables['hruId'][:] = hruidxID
 
-#print local_atrbt.variables['hruId'][:]
+newMH = np.array([3.5])
+newLat = np.array([37.906914133])#33333) np.array(sbFD.variables['latitude'][:])
+newLon = np.array([360 - 107.711322011])#11111)np.array(sbFD.variables['longitude'][:])
+newElev = np.array([3371])
+
+len_lat = np.repeat(newLat[:,np.newaxis], hru_num, axis=1); len_lat=len_lat.reshape(hru_num,)
+len_lon= np.repeat(newLon[:,np.newaxis], hru_num, axis=1); len_lon=len_lon.reshape(hru_num,)
+len_MH= np.repeat(newMH[:,np.newaxis], hru_num, axis=1); len_MH=len_MH.reshape(hru_num,)
+len_Elev= np.repeat(newElev[:,np.newaxis], hru_num, axis=1); len_Elev=len_Elev.reshape(hru_num,)
+
+lat[:] = len_lat
+lon[:] = len_lon
+mh[:] = len_MH
+elev[:] = len_Elev
 
 local_atrbt.close()
 #%%
 lacheck = Dataset('summa_zLocalAttributes_swampAngel_sa2.nc')
 
-print lacheck.variables['vegTypeIndex'][:]
+print lacheck.variables['mHeight'][:]
 #for j in laCheck.variables:
 #    print j
 for varname in lacheck.variables.keys():
     var = lacheck.variables[varname]
     print (varname, var.dtype, var.dimensions, var.shape)    
-lacheck.close()
+#lacheck.close()
 #%% # initial conditions file. summa_zInitialCond_vtest
 
 in_condi = Dataset("summa_zInitialCond_sa2.nc",'w',format='NETCDF3_CLASSIC')
